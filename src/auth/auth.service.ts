@@ -1,0 +1,51 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { LoginUserDto } from './dto/login-user.dto';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
+import { Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async login(loginUserDto: LoginUserDto, res: Response) {
+    const { email, password } = loginUserDto;
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: {
+        email: true,
+        password: true,
+        id: true,
+        name: true,
+        nickname: true,
+      },
+    });
+
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Usuario y/o contraseña incorrectos');
+    }
+
+    delete user.password;
+
+    const payload = { nickname: user.nickname, id: user.id, email: user.email };
+
+    const token = await this.jwtService.signAsync(payload);
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24, //? 1 día;
+      sameSite: 'lax', //? Para evitar ataques CSRF
+    });
+
+    return { user };
+  }
+}
