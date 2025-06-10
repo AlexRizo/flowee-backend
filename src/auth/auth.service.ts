@@ -48,4 +48,28 @@ export class AuthService {
 
     return { user };
   }
+
+  async logout(res: Response) {
+    res.clearCookie('access_token');
+    return { message: 'Sesión terminada' };
+  }
+
+  checkAuth(res: Response, user: User) {
+    const { id, email, nickname } = user;
+
+    const checkToken = this.jwtService.sign({
+      id,
+      email,
+      nickname,
+    });
+
+    res.cookie('access_token', checkToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 24, //? 1 día;
+      sameSite: 'lax', //? Para evitar ataques CSRF
+    });
+
+    return { user };
+  }
 }

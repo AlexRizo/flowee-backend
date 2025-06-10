@@ -1,22 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from '../interfaces/jwt.interface';
+import { User } from 'src/users/entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (req: Request) => req?.cookies?.access_token,
-      ]),
       secretOrKey: configService.get('JWT_SECRET'),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          const cookies = req.headers.cookie;
+
+          if (!cookies) return null;
+
+          return cookies.split('=')[1];
+        },
+      ]),
     });
   }
 
   async validate(payload: JwtPayload) {
-    return payload;
+    const { email } = payload;
+
+    const user = await this.userRepository.findOneBy({ email });
+
+    if (!user) throw new UnauthorizedException('El token no es válido');
+
+    if (!user.isActive)
+      throw new UnauthorizedException('El usuario está inactivo');
+
+    return user;
   }
 }
