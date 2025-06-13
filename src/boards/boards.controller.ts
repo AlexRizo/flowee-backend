@@ -20,7 +20,7 @@ export class BoardsController {
   constructor(private readonly boardsService: BoardsService) {}
 
   @Post()
-  @Auth(Roles.ADMIN, Roles.DESIGNER)
+  @Auth(Roles.ADMIN, Roles.DESIGNER, Roles.PUBLISHER)
   create(@Body() createBoardDto: CreateBoardDto) {
     return this.boardsService.create(createBoardDto);
   }
@@ -31,9 +31,9 @@ export class BoardsController {
     return this.boardsService.findAll(user);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.boardsService.findOne(+id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.boardsService.findOne(term);
   }
 
   @Patch(':id')

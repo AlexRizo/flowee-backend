@@ -10,12 +10,17 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { isUUID } from 'class-validator';
 import * as bcrypt from 'bcrypt';
+import { BoardsService } from 'src/boards/boards.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { Board } from 'src/boards/entities/board.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    private readonly boardsService: BoardsService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -29,10 +34,35 @@ export class UsersService {
       await this.userRepository.save(user);
       delete user.password;
 
-      return user;
+      return {
+        user,
+        message: 'Usuario creado correctamente',
+      };
     } catch (error) {
       this.handleDBExceptions(error);
     }
+  }
+
+  async update(id: string, { boards, ...updateUserDto }: UpdateUserDto) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['boards'],
+    });
+
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+
+    if (boards) {
+      await this.checkBoards(boards);
+      user.boards = boards.map(boardId => ({ id: boardId }) as Board);
+    }
+
+    Object.assign(user, updateUserDto);
+    const updatedUser = await this.userRepository.save(user);
+
+    return {
+      user: updatedUser,
+      message: 'Usuario actualizado correctamente',
+    };
   }
 
   async findAll() {
@@ -44,13 +74,17 @@ export class UsersService {
     let user: User;
 
     if (isUUID(term)) {
-      user = await this.userRepository.findOneBy({
-        id: term,
+      user = await this.userRepository.findOne({
+        where: { id: term },
+        relations: ['boards'],
       });
     }
 
     if (!user) {
-      user = await this.userRepository.findOneBy({ nickname: term });
+      user = await this.userRepository.findOne({
+        where: { nickname: term },
+        relations: ['boards'],
+      });
     }
 
     if (!user) {
@@ -59,7 +93,7 @@ export class UsersService {
       );
     }
 
-    return user;
+    return { user };
   }
 
   private handleDBExceptions(error: any) {
@@ -76,5 +110,18 @@ export class UsersService {
     throw new InternalServerErrorException(
       'Error inesperado, revise los logs del servidor',
     );
+  }
+
+  private async checkBoards(boards: string[]) {
+    const foundBoards = await this.boardsService.findByIds(boards);
+    const foundIds = new Set(foundBoards.map(board => board.id));
+
+    for (const boardId of boards) {
+      if (!foundIds.has(boardId)) {
+        throw new NotFoundException(
+          `El tablero con el id ${boardId} no existe`,
+        );
+      }
+    }
   }
 }

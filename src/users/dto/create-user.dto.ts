@@ -1,4 +1,12 @@
-import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsEnum,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
+import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { BeforeInsert, BeforeUpdate } from 'typeorm';
 
 export class CreateUserDto {
@@ -12,6 +20,10 @@ export class CreateUserDto {
   @IsString()
   @MinLength(3)
   nickname: string;
+
+  @IsArray()
+  @IsEnum(Roles, { each: true })
+  roles: Roles[];
 
   @IsString()
   @MinLength(6)

@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -14,6 +22,15 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Patch(':id')
+  @Auth(Roles.ADMIN, Roles.SUPER_ADMIN)
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, updateUserDto);
+  }
+
   @Get()
   @Auth(Roles.ADMIN, Roles.READER)
   findAll() {
@@ -21,7 +38,7 @@ export class UsersController {
   }
 
   @Get(':term')
-  @UseGuards(AuthGuard())
+  @Auth()
   findOne(@Param('term') term: string) {
     return this.usersService.findOne(term);
   }

@@ -6,11 +6,12 @@ import {
 } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Board } from './entities/board.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class BoardsService {
@@ -32,27 +33,48 @@ export class BoardsService {
 
   async findAll(user: User) {
     const { roles } = user;
-    let boards: Board[] = [];
+    let boards: Board[] = null;
 
     if (roles.includes(Roles.ADMIN) || roles.includes(Roles.READER)) {
       boards = await this.boardRepository.find();
-    }
-
-    if (roles.includes(Roles.DESIGNER) || roles.includes(Roles.PUBLISHER)) {
+    } else if (
+      roles.includes(Roles.DESIGNER) ||
+      roles.includes(Roles.PUBLISHER)
+    ) {
       boards = await this.boardRepository.find({
         where: { users: { id: user.id } },
       });
     }
 
-    if (!boards.length) {
-      throw new NotFoundException('No se encontraron tableros');
+    if (!boards) {
+      throw new NotFoundException(
+        'No se encontraron tableros. Intétalo nuevamente',
+      );
     }
 
     return { boards };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} board`;
+  async findOne(term: string) {
+    let board: Board;
+
+    if (isUUID(term)) {
+      board = await this.boardRepository.findOneBy({ id: term });
+    }
+
+    if (!board) {
+      board = await this.boardRepository.findOneBy({ slug: term });
+    }
+
+    if (!board) {
+      throw new NotFoundException(`Tablero con el ${term} no encontrado`);
+    }
+
+    return { board };
+  }
+
+  findByIds(ids: string[]) {
+    return this.boardRepository.findBy({ id: In(ids) });
   }
 
   update(id: number, updateBoardDto: UpdateBoardDto) {
