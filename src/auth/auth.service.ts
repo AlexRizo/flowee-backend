@@ -33,9 +33,19 @@ export class AuthService {
       throw new UnauthorizedException('Usuario y/o contraseña incorrectos');
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Cuenta suspendida. Si cree que es un error, contacte con el administrador.',
+      );
+    }
+
     delete user.password;
 
-    const payload = { nickname: user.nickname, id: user.id, email: user.email };
+    const payload = {
+      nickname: user.nickname,
+      id: user.id,
+      email: user.email,
+    };
 
     const token = await this.jwtService.signAsync(payload);
 
@@ -45,7 +55,6 @@ export class AuthService {
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: 'lax', //? Para evitar ataques CSRF
     });
-
     return { user };
   }
 

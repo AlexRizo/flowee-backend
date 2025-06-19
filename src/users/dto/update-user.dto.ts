@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 
 import {
   IsArray,
@@ -24,6 +24,9 @@ export class UpdateUserDto {
   @IsString()
   @MinLength(3)
   @IsOptional()
+  @Matches(/^[a-zA-Z0-9_]+$/, {
+    message: 'El nickname solo puede contener letras, números y guiones bajos.',
+  })
   nickname: string;
 
   @IsArray()
@@ -40,6 +43,10 @@ export class UpdateUserDto {
   @IsOptional()
   password: string;
 
+  @IsBoolean()
+  @IsOptional()
+  isActive: boolean;
+
   @IsArray()
   @IsString({ each: true })
   @IsUUID(4, { each: true })
@@ -49,6 +56,7 @@ export class UpdateUserDto {
   @BeforeInsert()
   checkEmailBeforeInsert() {
     this.email = this.email.toLowerCase().trim();
+    this.nickname = this.nickname.toLowerCase().trim();
   }
 
   @BeforeUpdate()

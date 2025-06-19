@@ -19,6 +19,9 @@ export class CreateUserDto {
 
   @IsString()
   @MinLength(3)
+  @Matches(/^[a-zA-Z0-9_]+$/, {
+    message: 'El nickname solo puede contener letras, números y guiones bajos.',
+  })
   nickname: string;
 
   @IsArray()
@@ -36,6 +39,7 @@ export class CreateUserDto {
   @BeforeInsert()
   checkEmailBeforeInsert() {
     this.email = this.email.toLowerCase().trim();
+    this.nickname = this.nickname.toLowerCase().trim();
   }
 
   @BeforeUpdate()
