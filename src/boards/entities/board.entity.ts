@@ -1,3 +1,4 @@
+import { Task } from 'src/tasks/entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   BeforeInsert,
@@ -5,6 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -40,6 +42,9 @@ export class Board {
 
   @ManyToMany(() => User, user => user.boards)
   users: User[];
+
+  @OneToMany(() => Task, task => task.board)
+  tasks: Task[];
 
   @CreateDateColumn({
     type: 'timestamp',

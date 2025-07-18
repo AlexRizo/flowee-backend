@@ -1,15 +1,51 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from './entities/task.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class TasksService {
-  create(createTaskDto: CreateTaskDto) {
-    return 'This action adds a new task';
+  constructor(
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
+  ) {}
+
+  async create(createTaskDto: CreateTaskDto) {
+    try {
+      const task = this.taskRepository.create(createTaskDto);
+      await this.taskRepository.save(task);
+
+      return { task };
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all tasks`;
+  async findBoardTasks(term: string) {
+    let tasks: Task[];
+
+    if (isUUID(term)) {
+      tasks = await this.taskRepository.findBy({ board: { id: term } });
+    }
+
+    if (!tasks) {
+      tasks = await this.taskRepository.findBy({ board: { slug: term } });
+    }
+
+    if (!tasks) {
+      throw new NotFoundException(
+        `No se encontraron tareas con el término: ${term}`,
+      );
+    }
+
+    return { tasks };
   }
 
   findOne(id: number) {
@@ -22,5 +58,10 @@ export class TasksService {
 
   remove(id: number) {
     return `This action removes a #${id} task`;
+  }
+
+  private handleDBExceptions(error: any) {
+    console.log(error);
+    throw new InternalServerErrorException('Unexpected error, check logs');
   }
 }

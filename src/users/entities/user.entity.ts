@@ -1,11 +1,13 @@
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { Board } from 'src/boards/entities/board.entity';
+import { Task } from 'src/tasks/entities/task.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -36,6 +38,12 @@ export class User {
   @ManyToMany(() => Board, board => board.users)
   @JoinTable()
   boards: Board[];
+
+  @OneToMany(() => Task, task => task.author)
+  createdTasks: Task[];
+
+  @OneToMany(() => Task, task => task.assignedTo)
+  assignedTasks: Task[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
