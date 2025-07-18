@@ -26,6 +26,7 @@ export class AuthService {
         id: true,
         name: true,
         nickname: true,
+        isActive: true,
       },
     });
 

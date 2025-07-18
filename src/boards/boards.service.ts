@@ -47,9 +47,7 @@ export class BoardsService {
     }
 
     if (!boards) {
-      throw new NotFoundException(
-        'No se encontraron tableros. Intétalo nuevamente',
-      );
+      throw new NotFoundException('No se encontraron tableros.');
     }
 
     return { boards };
@@ -78,6 +76,7 @@ export class BoardsService {
   }
 
   update(id: number, updateBoardDto: UpdateBoardDto) {
+    console.log(updateBoardDto);
     return `This action updates a #${id} board`;
   }
 
