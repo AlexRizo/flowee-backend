@@ -5,9 +5,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { BoardsModule } from 'src/boards/boards.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), AuthModule, BoardsModule],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    AuthModule,
+    BoardsModule,
+    CloudinaryModule,
+  ],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [TypeOrmModule, UsersService],
