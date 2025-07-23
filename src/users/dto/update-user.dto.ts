@@ -43,6 +43,10 @@ export class UpdateUserDto {
   @IsOptional()
   password: string;
 
+  @IsString()
+  @IsOptional()
+  avatar: string;
+
   @IsBoolean()
   @IsOptional()
   isActive: boolean;

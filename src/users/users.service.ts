@@ -13,6 +13,8 @@ import * as bcrypt from 'bcrypt';
 import { BoardsService } from 'src/boards/boards.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Board } from 'src/boards/entities/board.entity';
+import sharp from 'sharp';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +23,8 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
 
     private readonly boardsService: BoardsService,
+
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -62,6 +66,25 @@ export class UsersService {
     return {
       user: updatedUser,
       message: 'Usuario actualizado correctamente',
+    };
+  }
+
+  async uploadAvatar(file: Express.Multer.File, term: string) {
+    const resized = await sharp(file.buffer)
+      .resize({ width: 100 })
+      .webp({ quality: 90 })
+      .toBuffer();
+
+    const result = await this.cloudinaryService.uploadBuffer(
+      resized,
+      'avatars',
+    );
+
+    console.log({ result, term });
+
+    return {
+      url: result.secure_url,
+      message: 'Avatar actualizado correctamente',
     };
   }
 

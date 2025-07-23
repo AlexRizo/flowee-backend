@@ -2,6 +2,7 @@ import {
   IsArray,
   IsEmail,
   IsEnum,
+  IsOptional,
   IsString,
   Matches,
   MinLength,
@@ -35,6 +36,10 @@ export class CreateUserDto {
       'La contraseña debe incluir mayúsculas, minúsculas, números y caracteres especiales. Mínimo 6 caracteres.',
   })
   password: string;
+
+  @IsString()
+  @IsOptional()
+  avatar: string;
 
   @BeforeInsert()
   checkEmailBeforeInsert() {

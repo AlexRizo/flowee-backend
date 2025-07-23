@@ -29,6 +29,9 @@ export class User {
   @Column({ type: 'text', select: false })
   password: string;
 
+  @Column({ type: 'text', nullable: true })
+  avatar: string;
+
   @Column({ type: 'text', array: true, default: [Roles.READER] })
   roles: string[];
 
