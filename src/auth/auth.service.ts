@@ -26,7 +26,9 @@ export class AuthService {
         id: true,
         name: true,
         nickname: true,
+        roles: true,
         isActive: true,
+        avatar: true,
       },
     });
 
@@ -56,6 +58,7 @@ export class AuthService {
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: 'lax', //? Para evitar ataques CSRF
     });
+
     return { user };
   }
 
@@ -65,7 +68,7 @@ export class AuthService {
   }
 
   checkAuth(res: Response, user: User) {
-    const { id, email, nickname } = user;
+    const { id, email, nickname, avatar, roles, isActive, name } = user;
 
     const checkToken = this.jwtService.sign({
       id,
@@ -80,6 +83,16 @@ export class AuthService {
       sameSite: 'lax', //? Para evitar ataques CSRF
     });
 
-    return { user };
+    return {
+      user: {
+        id,
+        name,
+        nickname,
+        email,
+        avatar,
+        roles,
+        isActive,
+      },
+    };
   }
 }

@@ -13,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { BoardsService } from 'src/boards/boards.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Board } from 'src/boards/entities/board.entity';
-import sharp from 'sharp';
+import * as sharp from 'sharp';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
@@ -70,22 +70,33 @@ export class UsersService {
   }
 
   async uploadAvatar(file: Express.Multer.File, term: string) {
-    const resized = await sharp(file.buffer)
-      .resize({ width: 100 })
-      .webp({ quality: 90 })
-      .toBuffer();
+    try {
+      const user = await this.findOne(term);
 
-    const result = await this.cloudinaryService.uploadBuffer(
-      resized,
-      'avatars',
-    );
+      const resized = await sharp(file.buffer)
+        .resize(128, 128, {
+          fit: 'cover',
+          position: 'center',
+        })
+        .webp()
+        .toBuffer();
 
-    console.log({ result, term });
+      const result = await this.cloudinaryService.uploadBuffer(
+        resized,
+        'avatars',
+        'avatar',
+      );
 
-    return {
-      url: result.secure_url,
-      message: 'Avatar actualizado correctamente',
-    };
+      await this.userRepository.update(user.id, { avatar: result.secure_url });
+
+      return {
+        url: result.secure_url,
+        message: 'Avatar actualizado correctamente',
+      };
+    } catch (error) {
+      console.error('Error al actualizar el avatar', error);
+      throw new InternalServerErrorException('No se pudo actualizar el avatar');
+    }
   }
 
   async findAll() {
@@ -94,21 +105,12 @@ export class UsersService {
   }
 
   async findOne(term: string) {
-    let user: User;
+    const where = isUUID(term) ? { id: term } : { nickname: term };
 
-    if (isUUID(term)) {
-      user = await this.userRepository.findOne({
-        where: { id: term },
-        relations: ['boards'],
-      });
-    }
-
-    if (!user) {
-      user = await this.userRepository.findOne({
-        where: { nickname: term },
-        relations: ['boards'],
-      });
-    }
+    const user = await this.userRepository.findOne({
+      where,
+      relations: ['boards'],
+    });
 
     if (!user) {
       throw new NotFoundException(
@@ -116,7 +118,7 @@ export class UsersService {
       );
     }
 
-    return { user };
+    return user;
   }
 
   private handleDBExceptions(error: any) {

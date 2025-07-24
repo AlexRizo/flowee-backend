@@ -36,7 +36,7 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Patch('avatar/:term')
+  @Patch(':term/avatar')
   @Auth()
   @UseInterceptors(
     FileInterceptor('file', {
@@ -48,8 +48,8 @@ export class UsersController {
     }),
   )
   async uploadAvatar(
-    @UploadedFile() file: Express.Multer.File,
     @Param('term') term: string,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     return this.usersService.uploadAvatar(file, term);
   }
