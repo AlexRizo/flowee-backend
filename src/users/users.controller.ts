@@ -8,6 +8,9 @@ import {
   Patch,
   UseInterceptors,
   UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,7 +19,7 @@ import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { fileFilter } from './helpers/fileFilter';
+import { fileExceptionFilters } from './helpers/exceptionFilters';
 
 @Controller('users')
 export class UsersController {
@@ -41,15 +44,24 @@ export class UsersController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
-      limits: {
-        fileSize: 1024 * 1024 * 15, //? 15MB
-      },
-      fileFilter: fileFilter,
     }),
   )
   async uploadAvatar(
     @Param('term') term: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: /^image\/(png|jpg|jpeg|webp)$/,
+          }),
+          new MaxFileSizeValidator({
+            maxSize: 1024 * 1024 * 15,
+          }), //? 15MB
+        ],
+        exceptionFactory: fileExceptionFilters,
+      }),
+    )
+    file: Express.Multer.File,
   ) {
     return this.usersService.uploadAvatar(file, term);
   }

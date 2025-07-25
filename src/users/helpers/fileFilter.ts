@@ -5,6 +5,7 @@ export const fileFilter = (
   file: Express.Multer.File,
   cb: (error: Error | null, acceptFile: boolean) => void,
 ) => {
+  console.log(file);
   if (!file) return cb(new Error('File is required'), false);
 
   if (!file.mimetype.match(/^image\/(png|jpg|jpeg|webp)$/)) {
