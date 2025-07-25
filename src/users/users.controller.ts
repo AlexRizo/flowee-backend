@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Param,
-  ParseUUIDPipe,
   Patch,
   UseInterceptors,
   UploadedFile,
@@ -20,6 +19,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { fileExceptionFilters } from './helpers/exceptionFilters';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -30,13 +31,14 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Patch(':id')
-  @Auth(Roles.ADMIN, Roles.SUPER_ADMIN)
+  @Patch(':term')
+  @Auth()
   update(
-    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('term') term: string,
     @Body() updateUserDto: UpdateUserDto,
+    @GetUser() user: User,
   ) {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.update(term, updateUserDto, user);
   }
 
   @Patch(':term/avatar')

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -8,13 +9,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { isUUID } from 'class-validator';
+import { isEmail, isUUID } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { BoardsService } from 'src/boards/boards.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Board } from 'src/boards/entities/board.entity';
 import * as sharp from 'sharp';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 
 @Injectable()
 export class UsersService {
@@ -47,26 +49,41 @@ export class UsersService {
     }
   }
 
-  async update(id: string, { boards, ...updateUserDto }: UpdateUserDto) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['boards'],
-    });
+  async update(
+    term: string,
+    { boards, ...updateUserDto }: UpdateUserDto,
+    currentUser: User,
+  ) {
+    try {
+      const isSelf =
+        (isUUID(term) && currentUser.id === term) ||
+        (!isUUID(term) && term === currentUser.nickname);
 
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+      const isAdmin = currentUser.roles.includes(Roles.ADMIN);
 
-    if (boards) {
-      await this.checkBoards(boards);
-      user.boards = boards.map(boardId => ({ id: boardId }) as Board);
+      if (!isSelf && !isAdmin) {
+        throw new ForbiddenException(
+          'No tienes permisos para realizar esta acción',
+        );
+      }
+
+      const user = await this.findOne(term);
+
+      if (boards) {
+        await this.checkBoards(boards);
+        user.boards = boards.map(boardId => ({ id: boardId }) as Board);
+      }
+
+      Object.assign(user, updateUserDto);
+      await this.userRepository.save(user);
+
+      return {
+        message: 'Usuario actualizado correctamente',
+        user,
+      };
+    } catch (error) {
+      this.handleDBExceptions(error);
     }
-
-    Object.assign(user, updateUserDto);
-    const updatedUser = await this.userRepository.save(user);
-
-    return {
-      user: updatedUser,
-      message: 'Usuario actualizado correctamente',
-    };
   }
 
   async uploadAvatar(file: Express.Multer.File, term: string) {
@@ -109,7 +126,11 @@ export class UsersService {
   }
 
   async findOne(term: string) {
-    const where = isUUID(term) ? { id: term } : { nickname: term };
+    const where = isUUID(term)
+      ? { id: term }
+      : isEmail(term)
+        ? { email: term }
+        : { nickname: term };
 
     const user = await this.userRepository.findOne({
       where,

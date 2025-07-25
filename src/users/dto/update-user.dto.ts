@@ -35,12 +35,12 @@ export class UpdateUserDto {
   roles: Roles[];
 
   @IsString()
+  @IsOptional()
   @MinLength(6)
   @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{6,}$/, {
     message:
       'La contraseña debe incluir mayúsculas, minúsculas, números y caracteres especiales. Mínimo 6 caracteres.',
   })
-  @IsOptional()
   password: string;
 
   @IsString()
