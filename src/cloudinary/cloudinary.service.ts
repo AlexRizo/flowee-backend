@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Readable } from 'stream';
@@ -33,5 +33,27 @@ export class CloudinaryService {
 
       Readable.from(buffer).pipe(stream);
     });
+  }
+
+  async deleteFile(secure_url: string) {
+    try {
+      const public_id = this.extractPublicIdFromUrl(secure_url);
+      return await cloudinary.uploader.destroy(public_id);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        'No se ha podido reemplazar el archivo',
+      );
+    }
+  }
+
+  private extractPublicIdFromUrl(url: string) {
+    const matches = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
+
+    if (!matches || !matches[1]) {
+      throw new Error('No se pudo extraer el public_id de la URL');
+    }
+
+    return matches[1];
   }
 }

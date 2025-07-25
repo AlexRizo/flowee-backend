@@ -73,6 +73,10 @@ export class UsersService {
     try {
       const user = await this.findOne(term);
 
+      if (user.avatar) {
+        await this.cloudinaryService.deleteFile(user.avatar);
+      }
+
       const resized = await sharp(file.buffer)
         .resize(128, 128, {
           fit: 'cover',
