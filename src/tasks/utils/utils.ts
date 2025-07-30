@@ -9,5 +9,5 @@ export enum Type {
   PRINT = 'IMPRESO',
   DIGITAL = 'DIGITAL',
   ECOMMERCE = 'ECOMMERCE',
-  OTHER = 'OTRO',
+  SPECIAL = 'ESPECIAL',
 }
