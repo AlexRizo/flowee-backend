@@ -12,19 +12,16 @@ export class SpecialTask {
 
   @Column({
     type: 'text',
-    length: 1000,
   })
   idea: string;
 
   @Column({
     type: 'text',
-    length: 100,
   })
   sizes: string;
 
   @Column({
     type: 'text',
-    length: 500,
   })
   legals: string;
 }

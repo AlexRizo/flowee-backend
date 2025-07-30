@@ -1,21 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
-import { TasksService } from './tasks.service';
-import { UpdateTaskDto } from './dto/update-task.dto';
+import { Controller, Post, Body } from '@nestjs/common';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
+import { SpecialTasksService } from './special-tasks.service';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(private readonly specialTasksService: SpecialTasksService) {}
 
   @Post('special')
   @Auth(
@@ -25,26 +16,11 @@ export class TasksController {
     Roles.PUBLISHER_MANAGER,
   )
   createSpecialTask(@Body() createSpecialTaskDto: CreateSpecialTaskDto) {
-    return this.tasksService.createSpecialTask(createSpecialTaskDto);
+    return this.specialTasksService.createSpecialTask(createSpecialTaskDto);
   }
 
-  @Get('board/:term')
-  findBoardTasks(@Param('term') term: string) {
-    return this.tasksService.findBoardTasks(term);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.tasksService.update(+id, updateTaskDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(+id);
-  }
+  // @Get('board/:term')
+  // findBoardTasks(@Param('term') term: string) {
+  //   return this.tasksService.findBoardTasks(term);
+  // }
 }
