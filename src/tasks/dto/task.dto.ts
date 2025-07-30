@@ -1,7 +1,7 @@
 import { IsDate, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Priority, Type } from '../utils/utils';
 
-export class CreateTaskDto {
+export class TaskDto {
   @IsString()
   @IsNotEmpty()
   title: string;

@@ -8,24 +8,24 @@ import {
   Delete,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
+import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Post()
+  @Post('special')
   @Auth(
     Roles.ADMIN,
     Roles.DESIGN_MANAGER,
     Roles.PUBLISHER,
     Roles.PUBLISHER_MANAGER,
   )
-  create(@Body() createTaskDto: CreateTaskDto) {
-    return this.tasksService.create(createTaskDto);
+  createSpecialTask(@Body() createSpecialTaskDto: CreateSpecialTaskDto) {
+    return this.tasksService.createSpecialTask(createSpecialTaskDto);
   }
 
   @Get('board/:term')

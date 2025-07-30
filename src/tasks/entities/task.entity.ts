@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { SpecialTask } from './special-task.entity';
 
 @Entity('tasks')
 export class Task {
@@ -38,6 +40,13 @@ export class Task {
     type: 'text',
   })
   type: string;
+
+  @OneToOne(() => SpecialTask, specialTask => specialTask.task, {
+    cascade: true,
+    eager: true,
+    nullable: true,
+  })
+  specialTask: SpecialTask;
 
   @ManyToOne(() => User, user => user.createdTasks, { cascade: true })
   author: User;

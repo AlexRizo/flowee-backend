@@ -3,12 +3,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateTaskDto } from './dto/task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task } from './entities/task.entity';
 import { isUUID } from 'class-validator';
+import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -17,9 +18,9 @@ export class TasksService {
     private readonly taskRepository: Repository<Task>,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto) {
+  async createSpecialTask(createSpecialTaskDto: CreateSpecialTaskDto) {
     try {
-      const task = this.taskRepository.create(createTaskDto);
+      const task = this.taskRepository.create(createSpecialTaskDto);
       await this.taskRepository.save(task);
 
       return { task };
