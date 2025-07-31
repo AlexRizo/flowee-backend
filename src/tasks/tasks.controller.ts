@@ -1,12 +1,18 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
 import { SpecialTasksService } from './special-tasks.service';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly specialTasksService: SpecialTasksService) {}
+  constructor(
+    private readonly specialTasksService: SpecialTasksService,
+    private readonly tasksService: TasksService,
+  ) {}
 
   @Post('special')
   @Auth(
@@ -20,8 +26,9 @@ export class TasksController {
     return this.specialTasksService.createSpecialTask(createSpecialTaskDto);
   }
 
-  // @Get('board/:term')
-  // findBoardTasks(@Param('term') term: string) {
-  //   return this.tasksService.findBoardTasks(term);
-  // }
+  @Get('board/:boardTerm')
+  @Auth()
+  findBoardTasks(@Param('boardTerm') boardTerm: string, @GetUser() user: User) {
+    return this.tasksService.findBoardTasks(boardTerm, user);
+  }
 }

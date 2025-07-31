@@ -7,9 +7,9 @@ export class SpecialTask {
   @PrimaryColumn('uuid')
   id: string;
 
-  @Exclude()
   @OneToOne(() => Task, task => task.specialTask, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id' })
+  @Exclude()
   task: Task;
 
   @Column({

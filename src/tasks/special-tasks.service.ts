@@ -11,6 +11,7 @@ import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
 import { SpecialTask } from './entities/special-task.entity';
 import { UsersService } from 'src/users/users.service';
 import { BoardsService } from 'src/boards/boards.service';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class SpecialTasksService {
@@ -58,7 +59,7 @@ export class SpecialTasksService {
       });
       await this.specialTaskRepository.save(specialTask);
 
-      return { ...task, specialTask };
+      return { ...task, specialTask: instanceToPlain(specialTask) };
     } catch (error) {
       this.handleDBExceptions(error);
     }
