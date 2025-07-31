@@ -20,7 +20,7 @@ export class BoardsController {
   constructor(private readonly boardsService: BoardsService) {}
 
   @Post()
-  @Auth(Roles.ADMIN, Roles.DESIGNER, Roles.PUBLISHER)
+  @Auth(Roles.ADMIN, Roles.SUPER_ADMIN)
   create(@Body() createBoardDto: CreateBoardDto) {
     return this.boardsService.create(createBoardDto);
   }

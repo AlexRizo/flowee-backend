@@ -35,12 +35,14 @@ export class BoardsService {
     const { roles } = user;
     let boards: Board[] = null;
 
-    if (roles.includes(Roles.ADMIN) || roles.includes(Roles.READER)) {
+    const isAdmin =
+      roles.includes(Roles.ADMIN) ||
+      roles.includes(Roles.SUPER_ADMIN) ||
+      roles.includes(Roles.READER);
+
+    if (isAdmin) {
       boards = await this.boardRepository.find();
-    } else if (
-      roles.includes(Roles.DESIGNER) ||
-      roles.includes(Roles.PUBLISHER)
-    ) {
+    } else {
       boards = await this.boardRepository.find({
         where: { users: { id: user.id } },
       });

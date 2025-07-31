@@ -53,7 +53,7 @@ export class UsersController {
   }
 
   @Get()
-  @Auth(Roles.ADMIN, Roles.READER)
+  @Auth(Roles.ADMIN, Roles.SUPER_ADMIN, Roles.READER)
   findAll() {
     return this.usersService.findAll();
   }
