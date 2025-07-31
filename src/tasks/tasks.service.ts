@@ -32,7 +32,7 @@ export class TasksService {
     if (isAdmin || isManager) {
       tasks = await this.taskRepository.find({
         where: boardCondition,
-        // relations: ['author', 'assignedTo'],
+        relations: ['author', 'assignedTo', 'board'],
       });
     } else {
       tasks = await this.taskRepository.find({
@@ -40,13 +40,15 @@ export class TasksService {
           { ...boardCondition, assignedTo: { id: userId } },
           { ...boardCondition, author: { id: userId } },
         ],
-        // relations: ['author', 'assignedTo'],
+        relations: ['author', 'assignedTo', 'board'],
       });
     }
 
     if (!tasks || tasks.length === 0) {
       throw new NotFoundException('No se encontraron tareas');
     }
+
+    console.log(tasks);
 
     return tasks;
   }
