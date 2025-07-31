@@ -1,11 +1,13 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Task } from './task.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('special_tasks')
 export class SpecialTask {
   @PrimaryColumn('uuid')
   id: string;
 
+  @Exclude()
   @OneToOne(() => Task, task => task.specialTask, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id' })
   task: Task;

@@ -11,6 +11,7 @@ export class TasksController {
   @Post('special')
   @Auth(
     Roles.ADMIN,
+    Roles.SUPER_ADMIN,
     Roles.DESIGN_MANAGER,
     Roles.PUBLISHER,
     Roles.PUBLISHER_MANAGER,

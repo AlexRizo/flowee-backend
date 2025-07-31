@@ -9,6 +9,8 @@ import { Task } from './entities/task.entity';
 import { isUUID } from 'class-validator';
 import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
 import { SpecialTask } from './entities/special-task.entity';
+import { UsersService } from 'src/users/users.service';
+import { BoardsService } from 'src/boards/boards.service';
 
 @Injectable()
 export class SpecialTasksService {
@@ -18,13 +20,34 @@ export class SpecialTasksService {
 
     @InjectRepository(SpecialTask)
     private readonly specialTaskRepository: Repository<SpecialTask>,
+
+    private readonly usersService: UsersService,
+
+    private readonly boardsService: BoardsService,
   ) {}
 
   async createSpecialTask(TaskDto: CreateSpecialTaskDto) {
-    const { idea, sizes, legals, ...baseTask } = TaskDto;
+    const {
+      idea,
+      sizes,
+      legals,
+      authorId,
+      assignedToId,
+      boardId,
+      ...baseTask
+    } = TaskDto;
+
+    const author = await this.usersService.findOne(authorId);
+    const assignedTo = await this.usersService.findOne(assignedToId);
+    const board = await this.boardsService.findOne(boardId);
 
     try {
-      const task = this.taskRepository.create(baseTask);
+      const task = this.taskRepository.create({
+        ...baseTask,
+        author,
+        assignedTo,
+        board,
+      });
       await this.taskRepository.save(task);
 
       const specialTask = this.specialTaskRepository.create({
@@ -67,6 +90,8 @@ export class SpecialTasksService {
 
   private handleDBExceptions(error: any) {
     console.log(error);
-    throw new InternalServerErrorException('Unexpected error, check logs');
+    throw new InternalServerErrorException(
+      'Error inesperado, revise los logs del servidor',
+    );
   }
 }

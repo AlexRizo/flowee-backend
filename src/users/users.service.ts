@@ -156,6 +156,7 @@ export class UsersService {
       }
       throw new BadRequestException(error.detail);
     }
+
     console.error(error);
     throw new InternalServerErrorException(
       'Error inesperado, revise los logs del servidor',

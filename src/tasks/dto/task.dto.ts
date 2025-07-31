@@ -1,5 +1,6 @@
 import { IsDate, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { Priority, Type } from '../utils/utils';
+import { Priority, Status, Type } from '../utils/utils';
+import { Type as TransformerType } from 'class-transformer';
 
 export class TaskDto {
   @IsString()
@@ -17,6 +18,7 @@ export class TaskDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsEnum(Status)
   status: string;
 
   @IsString()
@@ -26,6 +28,7 @@ export class TaskDto {
 
   @IsDate()
   @IsNotEmpty()
+  @TransformerType(() => Date)
   dueDate: Date;
 
   @IsString()

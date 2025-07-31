@@ -70,7 +70,7 @@ export class BoardsService {
       throw new NotFoundException(`Tablero con el ${term} no encontrado`);
     }
 
-    return { board };
+    return board;
   }
 
   findByIds(ids: string[]) {

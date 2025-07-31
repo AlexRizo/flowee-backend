@@ -11,3 +11,11 @@ export enum Type {
   ECOMMERCE = 'ECOMMERCE',
   SPECIAL = 'ESPECIAL',
 }
+
+export enum Status {
+  AWAIT = 'ESPERA',
+  ATTENTION = 'ATENCION',
+  IN_PROGRESS = 'EN_PROCESO',
+  REVIEW = 'REVISION',
+  DONE = 'FINALIZADO',
+}
