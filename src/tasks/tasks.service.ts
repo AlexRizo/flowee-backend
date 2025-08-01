@@ -48,8 +48,6 @@ export class TasksService {
       throw new NotFoundException('No se encontraron tareas');
     }
 
-    console.log(tasks);
-
     return tasks;
   }
 }

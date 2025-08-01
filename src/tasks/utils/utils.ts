@@ -1,21 +1,21 @@
 export enum Priority {
-  LOW = 'BAJA',
+  LOW = 'LOW',
   NORMAL = 'NORMAL',
-  HIGH = 'ALTA',
-  URGENT = 'URGENTE',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT',
 }
 
 export enum Type {
-  PRINT = 'IMPRESO',
+  PRINT = 'PRINT',
   DIGITAL = 'DIGITAL',
   ECOMMERCE = 'ECOMMERCE',
-  SPECIAL = 'ESPECIAL',
+  SPECIAL = 'SPECIAL',
 }
 
 export enum Status {
-  AWAIT = 'ESPERA',
-  ATTENTION = 'ATENCION',
-  IN_PROGRESS = 'EN_PROCESO',
-  REVIEW = 'REVISION',
-  DONE = 'FINALIZADO',
+  AWAIT = 'AWAIT',
+  ATTENTION = 'ATTENTION',
+  IN_PROGRESS = 'IN_PROGRESS',
+  REVIEW = 'REVIEW',
+  DONE = 'DONE',
 }

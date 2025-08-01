@@ -7,6 +7,7 @@ import { BoardsModule } from './boards/boards.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FilesModule } from './files/files.module';
+import { TasksWsModule } from './tasks-ws/tasks-ws.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FilesModule } from './files/files.module';
     TasksModule,
     CloudinaryModule,
     FilesModule,
+    TasksWsModule,
   ],
   controllers: [],
 })
