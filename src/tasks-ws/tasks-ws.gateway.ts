@@ -1,32 +1,27 @@
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
-  OnGatewayInit,
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { TasksWsService } from './tasks-ws.service';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.CLIENT_URL ?? 'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     credentials: true,
   },
 })
 export class TasksWsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
+  implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(private readonly tasksWsService: TasksWsService) {}
 
-  afterInit(server: Server) {
-    console.log('WebSocket server initialized', server.engine.opts.cors);
-  }
-
   handleConnection(client: Socket) {
-    console.log('Client connectedddd', client.id);
+    this.tasksWsService.registerClient(client);
   }
 
   handleDisconnect(client: Socket) {
-    console.log('Client disconnected', client.id);
+    this.tasksWsService.removeClient(client.id);
   }
 }

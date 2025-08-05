@@ -14,6 +14,7 @@ import { TasksWsModule } from './tasks-ws/tasks-ws.module';
     UsersModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
