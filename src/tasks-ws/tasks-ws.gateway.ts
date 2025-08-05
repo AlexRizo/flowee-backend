@@ -1,6 +1,7 @@
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { TasksWsService } from './tasks-ws.service';
@@ -23,5 +24,10 @@ export class TasksWsGateway
 
   handleDisconnect(client: Socket) {
     this.tasksWsService.removeClient(client.id);
+  }
+
+  @SubscribeMessage('task-status-update')
+  onTaskStatusUpdate(client: Socket, payload: any) {
+    console.log(client.id, payload);
   }
 }
