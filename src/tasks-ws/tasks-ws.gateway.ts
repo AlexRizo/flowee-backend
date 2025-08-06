@@ -8,8 +8,12 @@ import {
 import { TasksWsService } from './tasks-ws.service';
 import { Server, Socket } from 'socket.io';
 import { UpdateTaskStatusDto } from './dtos/update-task-status.dto';
+import { getAcessToken } from 'src/auth/helpers/getAccessToken';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from 'src/auth/interfaces/jwt.interface';
 
 @WebSocketGateway({
+  namespace: '/tasks',
   cors: {
     origin: process.env.CLIENT_URL,
     credentials: true,
@@ -20,11 +24,24 @@ export class TasksWsGateway
 {
   @WebSocketServer() wss: Server;
 
-  constructor(private readonly tasksWsService: TasksWsService) {}
+  constructor(
+    private readonly tasksWsService: TasksWsService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   handleConnection(client: Socket) {
     console.log('client connected', client.id);
-    this.tasksWsService.registerClient(client);
+    const token = getAcessToken(client.handshake.headers.cookie);
+    let payload: JwtPayload;
+
+    try {
+      payload = this.jwtService.verify(token);
+    } catch {
+      client.disconnect();
+      return;
+    }
+
+    this.tasksWsService.registerClient(client, payload.id);
   }
 
   handleDisconnect(client: Socket) {
@@ -46,6 +63,8 @@ export class TasksWsGateway
 
   @SubscribeMessage('task-status-update')
   onTaskStatusUpdate(client: Socket, payload: UpdateTaskStatusDto) {
+    this.tasksWsService.updateTaskStatus(payload.taskId, payload.status);
+
     client.to(payload.boardId).emit('task-status-updated', {
       taskId: payload.taskId,
       status: payload.status,

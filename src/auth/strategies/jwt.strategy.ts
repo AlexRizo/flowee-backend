@@ -7,6 +7,7 @@ import { JwtPayload } from '../interfaces/jwt.interface';
 import { User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { getAcessToken } from '../helpers/getAccessToken';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -20,11 +21,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: configService.get('JWT_SECRET'),
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
-          const cookies = req.headers.cookie;
+          const cookie = req.headers.cookie;
 
-          if (!cookies) return null;
+          if (!cookie) return null;
 
-          return cookies.split('=')[1];
+          return getAcessToken(cookie);
         },
       ]),
     });

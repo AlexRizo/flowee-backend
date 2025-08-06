@@ -5,6 +5,7 @@ import { Task } from './entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { isUUID } from 'class-validator';
+import { Status } from './utils/utils';
 
 @Injectable()
 export class TasksService {
@@ -49,5 +50,21 @@ export class TasksService {
     }
 
     return tasks;
+  }
+
+  async findOne(id: string) {
+    const task = await this.taskRepository.findOneBy({ id });
+
+    if (!task) throw new NotFoundException('La tarea no existe');
+
+    return task;
+  }
+
+  async updateStatus(id: string, status: Status) {
+    const task = await this.findOne(id);
+
+    task.status = status;
+
+    return this.taskRepository.save(task);
   }
 }
