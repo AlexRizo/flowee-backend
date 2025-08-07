@@ -12,10 +12,10 @@ export class SpecialTask {
   @Exclude()
   task: Task;
 
-  @Column({
-    type: 'text',
-  })
-  idea: string;
+  // @Column({
+  //   type: 'text',
+  // })
+  // idea: string;
 
   @Column({
     type: 'text',

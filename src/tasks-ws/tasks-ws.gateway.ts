@@ -13,7 +13,6 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/auth/interfaces/jwt.interface';
 
 @WebSocketGateway({
-  namespace: '/tasks',
   cors: {
     origin: process.env.CLIENT_URL,
     credentials: true,
