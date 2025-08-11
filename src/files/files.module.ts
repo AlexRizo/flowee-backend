@@ -4,10 +4,15 @@ import { FilesController } from './files.controller';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FileTask } from './entities/task-file.entity';
+import { TasksModule } from 'src/tasks/tasks.module';
 
 @Module({
   controllers: [FilesController],
-  imports: [TypeOrmModule.forFeature([FileTask]), CloudinaryModule],
+  imports: [
+    TypeOrmModule.forFeature([FileTask]),
+    CloudinaryModule,
+    TasksModule,
+  ],
   providers: [FilesService],
   exports: [FilesService],
 })

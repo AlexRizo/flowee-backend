@@ -4,6 +4,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileTask, FileTaskType } from './entities/task-file.entity';
 import { Repository } from 'typeorm';
 import { TasksService } from 'src/tasks/tasks.service';
+import { sanitizeFileName } from 'src/common/helpers/sanitizeFileName';
 
 @Injectable()
 export class FilesService {
@@ -28,13 +29,21 @@ export class FilesService {
 
     const refUploads = await Promise.allSettled(
       referenceFiles.map(file =>
-        this.cloudinaryService.uploadBuffer(file.buffer, 'reference-files'),
+        this.cloudinaryService.uploadBuffer(
+          file.buffer,
+          'reference-files',
+          sanitizeFileName(file.originalname),
+        ),
       ),
     );
 
     const incUploads = await Promise.allSettled(
       includesFiles.map(file =>
-        this.cloudinaryService.uploadBuffer(file.buffer, 'includes-files'),
+        this.cloudinaryService.uploadBuffer(
+          file.buffer,
+          'includes-files',
+          sanitizeFileName(file.originalname),
+        ),
       ),
     );
 
@@ -46,7 +55,7 @@ export class FilesService {
           ? {
               public_id: upload.value.public_id,
               url: upload.value.secure_url,
-              name: referenceFiles[index].originalname,
+              name: sanitizeFileName(referenceFiles[index].originalname),
               task,
               type: FileTaskType.REFERENCE,
             }
@@ -61,7 +70,7 @@ export class FilesService {
           ? {
               public_id: upload.value.public_id,
               url: upload.value.secure_url,
-              name: includesFiles[index].originalname,
+              name: sanitizeFileName(includesFiles[index].originalname),
               task,
               type: FileTaskType.INCLUDE,
             }
@@ -69,9 +78,30 @@ export class FilesService {
       ),
     ];
 
+    const filesRejected = [
+      ...refUploads
+        .map((upload, index) =>
+          upload.status === 'rejected' ? referenceFiles[index] : null,
+        )
+        .filter(Boolean),
+      ...incUploads
+        .map((upload, index) =>
+          upload.status === 'rejected' ? includesFiles[index] : null,
+        )
+        .filter(Boolean),
+    ];
+
     await this.fileTaskRepository.save(filesToInsert.filter(Boolean));
 
-    return { refUploads, incUploads };
+    if (filesRejected.length > 0) {
+      return {
+        message: 'Algunos archivos no se pudieron subir',
+      };
+    }
+
+    return {
+      message: 'Todos los archivos se han subido correctamente',
+    };
   }
 
   createIncludesFiles(files: Express.Multer.File[], id: string) {
