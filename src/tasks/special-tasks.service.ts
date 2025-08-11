@@ -28,15 +28,8 @@ export class SpecialTasksService {
   ) {}
 
   async createSpecialTask(TaskDto: CreateSpecialTaskDto) {
-    const {
-      idea,
-      sizes,
-      legals,
-      authorId,
-      assignedToId,
-      boardId,
-      ...baseTask
-    } = TaskDto;
+    const { sizes, legals, authorId, assignedToId, boardId, ...baseTask } =
+      TaskDto;
 
     const author = await this.usersService.findOne(authorId);
     const assignedTo = await this.usersService.findOne(assignedToId);
@@ -52,7 +45,6 @@ export class SpecialTasksService {
       await this.taskRepository.save(task);
 
       const specialTask = this.specialTaskRepository.create({
-        idea,
         sizes,
         legals,
         task,

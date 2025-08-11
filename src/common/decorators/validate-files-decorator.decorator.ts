@@ -1,4 +1,4 @@
-import { ParseFilePipeBuilder, UploadedFile } from '@nestjs/common';
+import { ParseFilePipeBuilder, UploadedFiles } from '@nestjs/common';
 import { fileExceptionFilters } from 'src/common/helpers/exceptionFilters';
 
 const DEFAULT_FILE_TYPE = /^image\/(png|jpg|jpeg|webp)$/;
@@ -15,5 +15,5 @@ export const ValidateFiles = (maxFileSize?: number, fileType?: RegExp) => {
       exceptionFactory: fileExceptionFilters,
     });
 
-  return UploadedFile(pipe);
+  return UploadedFiles(pipe);
 };

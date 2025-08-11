@@ -5,11 +5,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { SpecialTask } from './special-task.entity';
+import { FileTask } from 'src/files/entities/task-file.entity';
 
 @Entity('tasks')
 export class Task {
@@ -40,6 +42,9 @@ export class Task {
     type: 'text',
   })
   type: string;
+
+  @OneToMany(() => FileTask, file => file.task, { cascade: true })
+  files: FileTask[];
 
   @OneToOne(() => SpecialTask, specialTask => specialTask.task, {
     cascade: true,
