@@ -1,4 +1,10 @@
-import { IsDate, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Priority, Status, Type } from '../utils/utils';
 import { Type as TransformerType } from 'class-transformer';
 
@@ -36,7 +42,7 @@ export class TaskDto {
   authorId: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   assignedToId: string;
 
   @IsString()
