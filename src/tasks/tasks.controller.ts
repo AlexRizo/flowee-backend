@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { CreateSpecialTaskDto } from './dto/create-special-task.dto';
@@ -6,6 +14,9 @@ import { SpecialTasksService } from './special-tasks.service';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { TasksService } from './tasks.service';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { FilesPayloadPipe } from 'src/files/pipes/files-payload.pipe';
 
 @Controller('tasks')
 export class TasksController {
@@ -22,8 +33,36 @@ export class TasksController {
     Roles.PUBLISHER,
     Roles.PUBLISHER_MANAGER,
   )
-  createSpecialTask(@Body() createSpecialTaskDto: CreateSpecialTaskDto) {
-    return this.specialTasksService.createSpecialTask(createSpecialTaskDto);
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'referenceFiles', maxCount: 5 },
+        { name: 'includeFiles', maxCount: 5 },
+      ],
+      {
+        storage: memoryStorage(),
+      },
+    ),
+  )
+  createSpecialTask(
+    @Body() createSpecialTaskDto: CreateSpecialTaskDto,
+    @UploadedFiles(
+      new FilesPayloadPipe({
+        requireReference: true,
+        requireIncludes: true,
+        allowEmptyArrays: false,
+        maxFileSize: 50, //? 50MB
+      }),
+    )
+    files: {
+      referenceFiles: Express.Multer.File[];
+      includeFiles: Express.Multer.File[];
+    },
+  ) {
+    return this.specialTasksService.createSpecialTask(
+      createSpecialTaskDto,
+      files,
+    );
   }
 
   @Get('board/:boardTerm')

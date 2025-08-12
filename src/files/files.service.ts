@@ -18,14 +18,14 @@ export class FilesService {
   async createTaskFiles(
     files: {
       referenceFiles: Express.Multer.File[];
-      includesFiles: Express.Multer.File[];
+      includeFiles: Express.Multer.File[];
     },
     id: string,
   ) {
     const task = await this.taskService.findOne(id);
 
     const referenceFiles = files.referenceFiles;
-    const includesFiles = files.includesFiles;
+    const includesFiles = files.includeFiles;
 
     const refUploads = await Promise.allSettled(
       referenceFiles.map(file =>

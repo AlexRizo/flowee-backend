@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FilesController } from './files.controller';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
@@ -11,7 +11,7 @@ import { TasksModule } from 'src/tasks/tasks.module';
   imports: [
     TypeOrmModule.forFeature([FileTask]),
     CloudinaryModule,
-    TasksModule,
+    forwardRef(() => TasksModule),
   ],
   providers: [FilesService],
   exports: [FilesService],

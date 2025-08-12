@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { TasksController } from './tasks.controller';
 import { AuthModule } from 'src/auth/auth.module';
@@ -10,6 +10,7 @@ import { SpecialTasksService } from './special-tasks.service';
 import { SpecialTask } from './entities/special-task.entity';
 import { UsersModule } from 'src/users/users.module';
 import { BoardsModule } from 'src/boards/boards.module';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { BoardsModule } from 'src/boards/boards.module';
     AuthModule,
     UsersModule,
     BoardsModule,
+    forwardRef(() => FilesModule),
   ],
   controllers: [TasksController],
   providers: [TasksService, SpecialTasksService],

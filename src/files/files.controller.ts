@@ -39,7 +39,7 @@ export class FilesController {
     )
     files: {
       referenceFiles: Express.Multer.File[];
-      includesFiles: Express.Multer.File[];
+      includeFiles: Express.Multer.File[];
     },
   ) {
     return this.filesService.createTaskFiles(files, id);

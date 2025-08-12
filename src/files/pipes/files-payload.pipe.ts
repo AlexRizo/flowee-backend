@@ -20,9 +20,9 @@ const ALLOWED_MIME_TYPES = [
   'text/rtf',
 ];
 
-type FilesPayload = {
+export type FilesPayload = {
   referenceFiles: Express.Multer.File[];
-  includesFiles: Express.Multer.File[];
+  includeFiles: Express.Multer.File[];
 };
 
 @Injectable()
@@ -38,8 +38,8 @@ export class FilesPayloadPipe implements PipeTransform {
   ) {}
 
   transform(value: FilesPayload) {
-    const ref = value.referenceFiles ?? [];
-    const inc = value.includesFiles ?? [];
+    const ref = value?.referenceFiles ?? [];
+    const inc = value?.includeFiles ?? [];
 
     const missing: string[] = [];
 

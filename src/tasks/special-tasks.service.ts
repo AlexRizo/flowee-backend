@@ -12,6 +12,8 @@ import { SpecialTask } from './entities/special-task.entity';
 import { UsersService } from 'src/users/users.service';
 import { BoardsService } from 'src/boards/boards.service';
 import { instanceToPlain } from 'class-transformer';
+import { FilesPayload } from 'src/files/pipes/files-payload.pipe';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class SpecialTasksService {
@@ -23,11 +25,11 @@ export class SpecialTasksService {
     private readonly specialTaskRepository: Repository<SpecialTask>,
 
     private readonly usersService: UsersService,
-
+    private readonly filesService: FilesService,
     private readonly boardsService: BoardsService,
   ) {}
 
-  async createSpecialTask(TaskDto: CreateSpecialTaskDto) {
+  async createSpecialTask(TaskDto: CreateSpecialTaskDto, files: FilesPayload) {
     const { sizes, legals, authorId, assignedToId, boardId, ...baseTask } =
       TaskDto;
 
@@ -49,9 +51,21 @@ export class SpecialTasksService {
         legals,
         task,
       });
+
       await this.specialTaskRepository.save(specialTask);
 
-      return { ...task, specialTask: instanceToPlain(specialTask) };
+      const uploadFilesResponse = await this.filesService.createTaskFiles(
+        files,
+        task.id,
+      );
+
+      return {
+        task: {
+          ...task,
+          specialTask: instanceToPlain(specialTask),
+        },
+        filesResponse: uploadFilesResponse,
+      };
     } catch (error) {
       this.handleDBExceptions(error);
     }
