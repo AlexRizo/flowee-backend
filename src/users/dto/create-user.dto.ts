@@ -8,7 +8,6 @@ import {
   MinLength,
 } from 'class-validator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
-import { BeforeInsert, BeforeUpdate } from 'typeorm';
 
 export class CreateUserDto {
   @IsString()
@@ -40,15 +39,4 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   avatar: string;
-
-  @BeforeInsert()
-  checkEmailBeforeInsert() {
-    this.email = this.email.toLowerCase().trim();
-    this.nickname = this.nickname.toLowerCase().trim();
-  }
-
-  @BeforeUpdate()
-  checkFieldsBeforeUpdate() {
-    this.checkEmailBeforeInsert();
-  }
 }

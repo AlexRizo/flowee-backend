@@ -9,7 +9,6 @@ import {
   MinLength,
 } from 'class-validator';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
-import { BeforeInsert, BeforeUpdate } from 'typeorm';
 
 export class UpdateUserDto {
   @IsString()
@@ -56,15 +55,4 @@ export class UpdateUserDto {
   @IsUUID(4, { each: true })
   @IsOptional()
   boards: string[];
-
-  @BeforeInsert()
-  checkEmailBeforeInsert() {
-    this.email = this.email.toLowerCase().trim();
-    this.nickname = this.nickname.toLowerCase().trim();
-  }
-
-  @BeforeUpdate()
-  checkFieldsBeforeUpdate() {
-    this.checkEmailBeforeInsert();
-  }
 }

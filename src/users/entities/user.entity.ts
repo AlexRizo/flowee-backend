@@ -1,7 +1,10 @@
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { Board } from 'src/boards/entities/board.entity';
 import { Task } from 'src/tasks/entities/task.entity';
+import * as bcrypt from 'bcrypt';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -53,4 +56,19 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  checkEmailBeforeInsert() {
+    this.email = this.email.toLowerCase().trim();
+    this.nickname = this.nickname.toLowerCase().trim();
+  }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async checkPasswordBeforeUpdate() {
+    if (this.password && !this.password.startsWith('$2')) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
+  }
 }

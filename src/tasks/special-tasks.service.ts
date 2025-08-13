@@ -14,6 +14,7 @@ import { BoardsService } from 'src/boards/boards.service';
 import { instanceToPlain } from 'class-transformer';
 import { FilesPayload } from 'src/files/pipes/files-payload.pipe';
 import { FilesService } from 'src/files/files.service';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class SpecialTasksService {
@@ -24,17 +25,25 @@ export class SpecialTasksService {
     @InjectRepository(SpecialTask)
     private readonly specialTaskRepository: Repository<SpecialTask>,
 
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
     private readonly usersService: UsersService,
     private readonly filesService: FilesService,
     private readonly boardsService: BoardsService,
   ) {}
 
-  async createSpecialTask(TaskDto: CreateSpecialTaskDto, files: FilesPayload) {
+  async createSpecialTask(taskDto: CreateSpecialTaskDto, files: FilesPayload) {
     const { sizes, legals, authorId, assignedToId, boardId, ...baseTask } =
-      TaskDto;
+      taskDto;
+    let assignedTo: User | null = null;
 
     const author = await this.usersService.findOne(authorId);
-    const assignedTo = await this.usersService.findOne(assignedToId);
+
+    if (assignedToId) {
+      assignedTo = await this.usersService.findOne(assignedToId);
+    }
+
     const board = await this.boardsService.findOne(boardId);
 
     try {
@@ -54,17 +63,19 @@ export class SpecialTasksService {
 
       await this.specialTaskRepository.save(specialTask);
 
-      const uploadFilesResponse = await this.filesService.createTaskFiles(
-        files,
-        task.id,
-      );
+      // const uploadFilesResponse = await this.filesService.createTaskFiles(
+      //   files,
+      //   task.id,
+      // );
+
+      console.log({ specialTask, assignedTo });
 
       return {
         task: {
           ...task,
           specialTask: instanceToPlain(specialTask),
         },
-        filesResponse: uploadFilesResponse,
+        filesResponse: undefined,
       };
     } catch (error) {
       this.handleDBExceptions(error);

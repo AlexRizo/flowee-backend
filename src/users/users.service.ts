@@ -9,7 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { isEmail, isUUID } from 'class-validator';
+import { isUUID } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { BoardsService } from 'src/boards/boards.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -54,26 +54,27 @@ export class UsersService {
     { boards, ...updateUserDto }: UpdateUserDto,
     currentUser: User,
   ) {
+    const isSelf =
+      (isUUID(term) && currentUser.id === term) ||
+      (!isUUID(term) && term === currentUser.nickname);
+
+    const isAdmin = currentUser.roles.includes(Roles.ADMIN);
+
+    if (!isSelf && !isAdmin) {
+      throw new ForbiddenException(
+        'No tienes permisos para realizar esta acción',
+      );
+    }
+    const user = await this.findOne(term);
+
+    if (boards) {
+      await this.checkBoards(boards);
+      user.boards = boards.map(boardId => ({ id: boardId }) as Board);
+    }
+
+    console.log({ user, updateUserDto });
+
     try {
-      const isSelf =
-        (isUUID(term) && currentUser.id === term) ||
-        (!isUUID(term) && term === currentUser.nickname);
-
-      const isAdmin = currentUser.roles.includes(Roles.ADMIN);
-
-      if (!isSelf && !isAdmin) {
-        throw new ForbiddenException(
-          'No tienes permisos para realizar esta acción',
-        );
-      }
-
-      const user = await this.findOne(term);
-
-      if (boards) {
-        await this.checkBoards(boards);
-        user.boards = boards.map(boardId => ({ id: boardId }) as Board);
-      }
-
       Object.assign(user, updateUserDto);
       await this.userRepository.save(user);
 
@@ -126,11 +127,7 @@ export class UsersService {
   }
 
   async findOne(term: string) {
-    const where = isUUID(term)
-      ? { id: term }
-      : isEmail(term)
-        ? { email: term }
-        : { nickname: term };
+    const where = isUUID(term) ? { id: term } : { nickname: term };
 
     const user = await this.userRepository.findOne({
       where,
