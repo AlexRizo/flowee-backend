@@ -11,7 +11,8 @@ import { UpdateTaskStatusDto } from './dtos/update-task-status.dto';
 import { getAcessToken } from 'src/auth/helpers/getAccessToken';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/auth/interfaces/jwt.interface';
-import { TaskDto } from 'src/tasks/dto/task.dto';
+import { JoinBoardDto } from './dtos/join-board.dto';
+import { CreateTaskDto } from './dtos/create-task.dto';
 
 @WebSocketGateway({
   cors: {
@@ -49,15 +50,19 @@ export class TasksWsGateway
   }
 
   @SubscribeMessage('join-board')
-  onJoinBoard(client: Socket, payload: { boardId: string }) {
+  onJoinBoard(client: Socket, payload: JoinBoardDto) {
     client.join(payload.boardId);
-    console.log('client joined board', payload.boardId);
+    this.tasksWsService.joinUserToBoard(client, payload);
+
+    console.log(client.rooms);
   }
 
   @SubscribeMessage('leave-board')
   onLeaveBoard(client: Socket, payload: { boardId: string }) {
-    client.leave(payload.boardId);
-    console.log('client left board', payload.boardId);
+    client.leave(`${payload.boardId}`);
+    if (client.rooms.has(`${payload.boardId}-manager`)) {
+      client.leave(`${payload.boardId}-manager`);
+    }
   }
 
   @SubscribeMessage('task-status-update')
@@ -71,7 +76,9 @@ export class TasksWsGateway
   }
 
   @SubscribeMessage('task-created')
-  onTaskCreated(client: Socket, payload: TaskDto) {
-    console.log(payload);
+  onTaskCreated(client: Socket, payload: CreateTaskDto) {
+    client
+      .to(`${payload.board.id}-manager`)
+      .emit('unassigned-task-created', payload);
   }
 }

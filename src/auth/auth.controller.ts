@@ -24,8 +24,8 @@ export class AuthController {
     return this.authService.logout(res);
   }
 
-  @Get('check-auth')
   @Auth()
+  @Get('check-auth')
   checkAuth(@Res({ passthrough: true }) res: Response, @GetUser() user: User) {
     return this.authService.checkAuth(res, user);
   }

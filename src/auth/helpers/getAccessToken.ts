@@ -1,1 +1,4 @@
-export const getAcessToken = (cookie: string = '') => cookie.split('=')[1];
+export const getAcessToken = (cookie: string = '') => {
+  const token = cookie.split('=')[1];
+  return token ? token : cookie;
+};

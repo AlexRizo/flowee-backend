@@ -68,8 +68,6 @@ export class SpecialTasksService {
       //   task.id,
       // );
 
-      console.log({ specialTask, assignedTo });
-
       return {
         task: {
           ...task,

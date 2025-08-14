@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Socket } from 'socket.io';
+import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { TasksService } from 'src/tasks/tasks.service';
 import { Status } from 'src/tasks/utils/utils';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+import { JoinBoardDto } from './dtos/join-board.dto';
 
 interface ConnectedClients {
   [id: string]: {
@@ -47,5 +49,18 @@ export class TasksWsService {
 
   async updateTaskStatus(taskId: string, status: Status) {
     return this.tasksService.updateStatus(taskId, status);
+  }
+
+  joinUserToBoard(client: Socket, payload: JoinBoardDto) {
+    const managerRoles = [
+      Roles.SUPER_ADMIN,
+      Roles.ADMIN,
+      Roles.DESIGN_MANAGER,
+      Roles.PUBLISHER_MANAGER,
+    ];
+
+    if (managerRoles.includes(payload.role)) {
+      client.join(`${payload.boardId}-manager`);
+    }
   }
 }

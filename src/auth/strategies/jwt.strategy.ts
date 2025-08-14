@@ -7,7 +7,7 @@ import { JwtPayload } from '../interfaces/jwt.interface';
 import { User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { getAcessToken } from '../helpers/getAccessToken';
+import { parse } from 'cookie';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -25,7 +25,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
           if (!cookie) return null;
 
-          return getAcessToken(cookie);
+          let accessToken = null;
+
+          if (cookie.includes('access_token')) {
+            accessToken = parse(cookie).access_token;
+          } else {
+            accessToken = cookie;
+          }
+
+          if (!accessToken) return null;
+
+          return accessToken;
         },
       ]),
     });
