@@ -72,8 +72,6 @@ export class UsersService {
       user.boards = boards.map(boardId => ({ id: boardId }) as Board);
     }
 
-    console.log({ user, updateUserDto });
-
     try {
       Object.assign(user, updateUserDto);
       await this.userRepository.save(user);
