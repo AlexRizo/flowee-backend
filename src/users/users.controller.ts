@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   UseInterceptors,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -62,5 +63,16 @@ export class UsersController {
   @Auth()
   findOne(@Param('term') term: string) {
     return this.usersService.findOne(term);
+  }
+
+  @Get('designers/board/:boardId')
+  @Auth(
+    Roles.ADMIN,
+    Roles.SUPER_ADMIN,
+    Roles.DESIGN_MANAGER,
+    Roles.PUBLISHER_MANAGER,
+  )
+  findDesignersByBoard(@Param('boardId', ParseUUIDPipe) boardId: string) {
+    return this.usersService.findDesignersByBoard(boardId);
   }
 }

@@ -6,15 +6,20 @@ import { User } from 'src/users/entities/user.entity';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { isUUID } from 'class-validator';
 import { Status } from './utils/utils';
+import { BoardsService } from 'src/boards/boards.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Task)
     private readonly taskRepository: Repository<Task>,
+
+    private readonly boardService: BoardsService,
   ) {}
 
   async findBoardTasks(boardTerm: string, { roles, id: userId }: User) {
+    await this.boardService.findOne(boardTerm);
+
     const isAdmin =
       roles.includes(Roles.ADMIN) ||
       roles.includes(Roles.SUPER_ADMIN) ||
@@ -47,6 +52,25 @@ export class TasksService {
 
     if (!tasks || tasks.length === 0) {
       throw new NotFoundException('No se encontraron tareas');
+    }
+
+    return tasks;
+  }
+
+  async findBoardPendingTasks(boardTerm: string) {
+    await this.boardService.findOne(boardTerm);
+
+    const boardCondition = isUUID(boardTerm)
+      ? { board: { id: boardTerm } }
+      : { board: { slug: boardTerm } };
+
+    const tasks = await this.taskRepository.find({
+      where: { ...boardCondition, status: Status.AWAIT },
+      relations: ['author', 'assignedTo', 'board'],
+    });
+
+    if (!tasks || tasks.length === 0) {
+      throw new NotFoundException('No se encontraron tareas pendientes');
     }
 
     return tasks;

@@ -70,4 +70,15 @@ export class TasksController {
   findBoardTasks(@Param('boardTerm') boardTerm: string, @GetUser() user: User) {
     return this.tasksService.findBoardTasks(boardTerm, user);
   }
+
+  @Get('board/:boardTerm/pending')
+  @Auth(
+    Roles.ADMIN,
+    Roles.SUPER_ADMIN,
+    Roles.DESIGN_MANAGER,
+    Roles.PUBLISHER_MANAGER,
+  )
+  findBoardPendingTasks(@Param('boardTerm') boardTerm: string) {
+    return this.tasksService.findBoardPendingTasks(boardTerm);
+  }
 }

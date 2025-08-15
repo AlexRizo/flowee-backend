@@ -17,12 +17,17 @@ import { Board } from 'src/boards/entities/board.entity';
 import * as sharp from 'sharp';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
+import { Task } from 'src/tasks/entities/task.entity';
+import { Status } from 'src/tasks/utils/utils';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
 
     private readonly boardsService: BoardsService,
 
@@ -139,6 +144,38 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  async findDesignersByBoard(boardId: string) {
+    await this.boardsService.findOne(boardId);
+
+    const designers = await this.userRepository
+      .createQueryBuilder('u')
+      .innerJoin('u.boards', 'b', 'b.id = :boardId', { boardId })
+      .where(':designerRole = ANY(u.roles)', { designerRole: Roles.DESIGNER })
+      .select(['u.id', 'u.name', 'u.avatar', 'u.nickname'])
+      .getMany();
+
+    const designerIds = designers.map(d => d.id);
+
+    if (designerIds.length === 0) {
+      throw new NotFoundException('No se encontraron diseñadores');
+    }
+
+    const tasks = await this.taskRepository
+      .createQueryBuilder('t')
+      .where('t.assignedToId IN (:...designerIds)', { designerIds })
+      .andWhere('t.status IN (:...statuses)', {
+        statuses: [Status.AWAIT, Status.IN_PROGRESS, Status.REVIEW],
+      })
+      .getMany();
+
+    const usersWithTasks = designers.map(designer => ({
+      ...designer,
+      tasks: tasks.filter(task => task.assignedTo.id === designer.id),
+    }));
+
+    return { designers: usersWithTasks };
   }
 
   private handleDBExceptions(error: any) {

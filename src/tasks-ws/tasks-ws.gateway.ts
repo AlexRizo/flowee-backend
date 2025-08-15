@@ -8,11 +8,11 @@ import {
 import { TasksWsService } from './tasks-ws.service';
 import { Server, Socket } from 'socket.io';
 import { UpdateTaskStatusDto } from './dtos/update-task-status.dto';
-import { getAcessToken } from 'src/auth/helpers/getAccessToken';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/auth/interfaces/jwt.interface';
 import { JoinBoardDto } from './dtos/join-board.dto';
 import { CreateTaskDto } from './dtos/create-task.dto';
+import { parse } from 'cookie';
 
 @WebSocketGateway({
   cors: {
@@ -32,7 +32,7 @@ export class TasksWsGateway
 
   async handleConnection(client: Socket) {
     console.log('client connected', client.id);
-    const token = getAcessToken(client.handshake.headers.cookie);
+    const token = parse(client.handshake.headers.cookie || '').access_token;
     let payload: JwtPayload;
 
     try {
@@ -53,8 +53,6 @@ export class TasksWsGateway
   onJoinBoard(client: Socket, payload: JoinBoardDto) {
     client.join(payload.boardId);
     this.tasksWsService.joinUserToBoard(client, payload);
-
-    console.log(client.rooms);
   }
 
   @SubscribeMessage('leave-board')

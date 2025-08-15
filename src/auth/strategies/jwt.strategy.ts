@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
           if (!cookie) return null;
 
-          let accessToken = null;
+          let accessToken: string | null = null;
 
           if (cookie.includes('access_token')) {
             accessToken = parse(cookie).access_token;

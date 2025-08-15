@@ -16,12 +16,12 @@ import { FilesModule } from 'src/files/files.module';
   imports: [
     TypeOrmModule.forFeature([Task, User, Board, SpecialTask]),
     AuthModule,
-    UsersModule,
     BoardsModule,
+    forwardRef(() => UsersModule),
     forwardRef(() => FilesModule),
   ],
   controllers: [TasksController],
   providers: [TasksService, SpecialTasksService],
-  exports: [TasksService, SpecialTasksService],
+  exports: [TasksService, SpecialTasksService, TypeOrmModule],
 })
 export class TasksModule {}
