@@ -13,6 +13,7 @@ import { JwtPayload } from 'src/auth/interfaces/jwt.interface';
 import { JoinBoardDto } from './dtos/join-board.dto';
 import { CreateTaskDto } from './dtos/create-task.dto';
 import { parse } from 'cookie';
+import { AssignTaskDto } from './dtos/assign-task.dto';
 
 @WebSocketGateway({
   cors: {
@@ -78,5 +79,11 @@ export class TasksWsGateway
     client
       .to(`${payload.board.id}-manager`)
       .emit('unassigned-task-created', payload);
+  }
+
+  @SubscribeMessage('assign-task')
+  async onAssignTask(client: Socket, payload: AssignTaskDto) {
+    const response = await this.tasksWsService.assignTask(payload);
+    console.log(response);
   }
 }

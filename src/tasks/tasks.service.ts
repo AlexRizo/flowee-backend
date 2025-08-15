@@ -1,12 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { Task } from './entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { isUUID } from 'class-validator';
 import { Status } from './utils/utils';
 import { BoardsService } from 'src/boards/boards.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class TasksService {
@@ -15,6 +20,7 @@ export class TasksService {
     private readonly taskRepository: Repository<Task>,
 
     private readonly boardService: BoardsService,
+    private readonly userService: UsersService,
   ) {}
 
   async findBoardTasks(boardTerm: string, { roles, id: userId }: User) {
@@ -65,7 +71,7 @@ export class TasksService {
       : { board: { slug: boardTerm } };
 
     const tasks = await this.taskRepository.find({
-      where: { ...boardCondition, status: Status.AWAIT },
+      where: { ...boardCondition, status: Status.AWAIT, assignedTo: IsNull() },
       relations: ['author', 'assignedTo', 'board'],
     });
 
@@ -88,7 +94,36 @@ export class TasksService {
     const task = await this.findOne(id);
 
     task.status = status;
+    await this.taskRepository.save(task);
 
-    return this.taskRepository.save(task);
+    return {
+      message: 'Estado de la tarea actualizado correctamente',
+    };
+  }
+
+  async assignTask(id: string, designerId: string, rewrite: boolean = false) {
+    const task = await this.findOne(id);
+
+    if (task.assignedTo && !rewrite) {
+      throw new BadRequestException('La tarea ya tiene un diseñador asignado');
+    }
+
+    const designer = await this.userService.findOne(designerId);
+
+    if (!designer || !designer.isActive) {
+      throw new NotFoundException('El diseñador no existe o está inactivo');
+    }
+
+    try {
+      task.assignedTo = designer;
+      await this.taskRepository.save(task);
+
+      return {
+        message: 'Tarea asignada correctamente',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException('Error al asignar la tarea');
+    }
   }
 }

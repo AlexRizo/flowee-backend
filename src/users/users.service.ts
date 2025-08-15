@@ -168,6 +168,7 @@ export class UsersService {
       .andWhere('t.status IN (:...statuses)', {
         statuses: [Status.AWAIT, Status.IN_PROGRESS, Status.REVIEW],
       })
+      .leftJoinAndSelect('t.assignedTo', 'assignedTo')
       .getMany();
 
     const usersWithTasks = designers.map(designer => ({

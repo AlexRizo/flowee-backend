@@ -7,6 +7,7 @@ import { Status } from 'src/tasks/utils/utils';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JoinBoardDto } from './dtos/join-board.dto';
+import { AssignTaskDto } from './dtos/assign-task.dto';
 
 interface ConnectedClients {
   [id: string]: {
@@ -48,7 +49,11 @@ export class TasksWsService {
   }
 
   async updateTaskStatus(taskId: string, status: Status) {
-    return this.tasksService.updateStatus(taskId, status);
+    await this.tasksService.updateStatus(taskId, status);
+  }
+
+  async assignTask({ taskId, designerId }: AssignTaskDto) {
+    return await this.tasksService.assignTask(taskId, designerId);
   }
 
   joinUserToBoard(client: Socket, payload: JoinBoardDto) {
