@@ -5,6 +5,7 @@ import {
   UseInterceptors,
   ParseUUIDPipe,
   UploadedFiles,
+  Get,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -14,6 +15,11 @@ import { FilesPayloadPipe } from './pipes/files-payload.pipe';
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
+
+  @Get('task/:id')
+  getTaskFiles(@Param('id', ParseUUIDPipe) id: string) {
+    return this.filesService.getTaskFiles(id);
+  }
 
   @Post('task/:id')
   @UseInterceptors(

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileTask, FileTaskType } from './entities/task-file.entity';
@@ -14,6 +14,31 @@ export class FilesService {
     @InjectRepository(FileTask)
     private readonly fileTaskRepository: Repository<FileTask>,
   ) {}
+
+  async getTaskFiles(id: string) {
+    this.taskService.findOne(id);
+
+    const taskFiles = await this.fileTaskRepository.findBy({
+      task: { id },
+    });
+
+    if (!taskFiles.length) {
+      throw new NotFoundException('No se encontraron archivos para la tarea');
+    }
+
+    const referenceFiles = taskFiles.filter(
+      file => file.type === FileTaskType.REFERENCE,
+    );
+
+    const includeFiles = taskFiles.filter(
+      file => file.type === FileTaskType.INCLUDE,
+    );
+
+    return {
+      referenceFiles,
+      includeFiles,
+    };
+  }
 
   async createTaskFiles(
     files: {
