@@ -64,8 +64,14 @@ export class TasksWsService {
       Roles.PUBLISHER_MANAGER,
     ];
 
+    const designer = Roles.DESIGNER;
+
     if (managerRoles.includes(payload.role)) {
       client.join(`${payload.boardId}-manager`);
+    }
+
+    if (designer === payload.role) {
+      client.join(`${payload.boardId}-designer`);
     }
   }
 }

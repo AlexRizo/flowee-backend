@@ -83,7 +83,10 @@ export class TasksWsGateway
 
   @SubscribeMessage('assign-task')
   async onAssignTask(client: Socket, payload: AssignTaskDto) {
-    const response = await this.tasksWsService.assignTask(payload);
-    console.log(response);
+    const { message, task } = await this.tasksWsService.assignTask(payload);
+    client.to(`${task.board.id}-designer`).emit('task-assigned', {
+      message,
+      task,
+    });
   }
 }

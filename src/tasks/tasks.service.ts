@@ -83,7 +83,10 @@ export class TasksService {
   }
 
   async findOne(id: string) {
-    const task = await this.taskRepository.findOneBy({ id });
+    const task = await this.taskRepository.findOne({
+      where: { id },
+      relations: ['author', 'board'],
+    });
 
     if (!task) throw new NotFoundException('La tarea no existe');
 
@@ -120,6 +123,7 @@ export class TasksService {
 
       return {
         message: 'Tarea asignada correctamente',
+        task,
       };
     } catch (error) {
       console.log(error);

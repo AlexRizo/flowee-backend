@@ -63,17 +63,17 @@ export class SpecialTasksService {
 
       await this.specialTaskRepository.save(specialTask);
 
-      // const uploadFilesResponse = await this.filesService.createTaskFiles(
-      //   files,
-      //   task.id,
-      // );
+      const filesResponse = await this.filesService.createTaskFiles(
+        files,
+        task.id,
+      );
 
       return {
         task: {
           ...task,
           specialTask: instanceToPlain(specialTask),
         },
-        filesResponse: undefined,
+        filesResponse,
       };
     } catch (error) {
       this.handleDBExceptions(error);
