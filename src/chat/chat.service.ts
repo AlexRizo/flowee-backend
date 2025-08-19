@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatMessages } from './entities/chat.entity';
@@ -15,6 +19,20 @@ export class ChatService {
     private readonly tasksService: TasksService,
     private readonly usersService: UsersService,
   ) {}
+
+  async getTaskMessages(taskId: string) {
+    await this.tasksService.findOne(taskId);
+
+    const messages = await this.chatMessagesRepository.findBy({
+      task: { id: taskId },
+    });
+
+    if (!messages || !messages.length) {
+      throw new NotFoundException('No se encontraron mensajes para esta tarea');
+    }
+
+    return messages;
+  }
 
   async create({ content, taskId, userId }: CreateMessageDto) {
     await this.usersService.findOne(userId);
