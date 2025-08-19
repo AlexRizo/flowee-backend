@@ -9,7 +9,7 @@ import { User } from 'src/users/entities/user.entity';
 import { Task } from 'src/tasks/entities/task.entity';
 
 @Entity('chat_messages')
-export class ChatMessages {
+export class ChatMessage {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

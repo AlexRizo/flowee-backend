@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { SpecialTask } from './special-task.entity';
 import { FileTask } from 'src/files/entities/task-file.entity';
-import { ChatMessages } from 'src/chat/entities/chat.entity';
+import { ChatMessage } from 'src/chat/entities/chat.entity';
 
 @Entity('tasks')
 export class Task {
@@ -63,8 +63,8 @@ export class Task {
   @ManyToOne(() => Board, board => board.tasks, { cascade: true })
   board: Board;
 
-  @OneToMany(() => ChatMessages, message => message.task)
-  messages: ChatMessages[];
+  @OneToMany(() => ChatMessage, message => message.task)
+  messages: ChatMessage[];
 
   @CreateDateColumn({
     type: 'timestamptz',

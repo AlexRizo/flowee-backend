@@ -107,7 +107,7 @@ export class TasksWsGateway
       return;
     }
 
-    client.to(`${payload.taskId}-chat`).emit('new-message', {
+    this.wss.to(`${payload.taskId}-chat`).emit('new-message', {
       message: response.chatMessage,
     });
   }
