@@ -14,6 +14,8 @@ import { JoinBoardDto } from './dtos/join-board.dto';
 import { CreateTaskDto } from './dtos/create-task.dto';
 import { parse } from 'cookie';
 import { AssignTaskDto } from './dtos/assign-task.dto';
+import { CreateMessageDto } from 'src/chat/dto/create-message.dto';
+import { ChatWsService } from './chat-ws.service';
 
 @WebSocketGateway({
   cors: {
@@ -29,6 +31,7 @@ export class TasksWsGateway
   constructor(
     private readonly tasksWsService: TasksWsService,
     private readonly jwtService: JwtService,
+    private readonly chatWsService: ChatWsService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -88,5 +91,11 @@ export class TasksWsGateway
       message,
       task,
     });
+  }
+
+  @SubscribeMessage('on-send-message')
+  async onSendMessage(client: Socket, payload: CreateMessageDto) {
+    const response = await this.chatWsService.createMessage(client, payload);
+    console.log(response);
   }
 }

@@ -14,6 +14,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ChatMessages } from 'src/chat/entities/chat.entity';
 
 @Entity('users')
 export class User {
@@ -50,6 +51,9 @@ export class User {
 
   @OneToMany(() => Task, task => task.assignedTo)
   assignedTasks: Task[];
+
+  @OneToMany(() => ChatMessages, message => message.user)
+  messages: ChatMessages[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
