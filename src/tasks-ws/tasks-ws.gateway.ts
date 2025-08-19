@@ -93,9 +93,22 @@ export class TasksWsGateway
     });
   }
 
+  @SubscribeMessage('join-chat')
+  async onJoinChat(client: Socket, payload: { taskId: string }) {
+    client.join(`${payload.taskId}-chat`);
+  }
+
   @SubscribeMessage('on-send-message')
   async onSendMessage(client: Socket, payload: CreateMessageDto) {
     const response = await this.chatWsService.createMessage(client, payload);
-    console.log(response);
+
+    if (!response.chatMessage) {
+      client.emit('error-message', response);
+      return;
+    }
+
+    client.to(`${payload.taskId}-chat`).emit('new-message', {
+      message: response.chatMessage,
+    });
   }
 }
