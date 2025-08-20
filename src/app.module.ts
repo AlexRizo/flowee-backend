@@ -9,6 +9,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FilesModule } from './files/files.module';
 import { TasksWsModule } from './tasks-ws/tasks-ws.module';
 import { ChatModule } from './chat/chat.module';
+import { FormatsModule } from './formats/formats.module';
+import { DeliveriesModule } from './deliveries/deliveries.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { ChatModule } from './chat/chat.module';
     FilesModule,
     TasksWsModule,
     ChatModule,
+    FormatsModule,
+    DeliveriesModule,
   ],
   controllers: [],
 })

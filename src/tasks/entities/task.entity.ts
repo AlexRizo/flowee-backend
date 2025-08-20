@@ -13,6 +13,7 @@ import {
 import { SpecialTask } from './special-task.entity';
 import { FileTask } from 'src/files/entities/task-file.entity';
 import { ChatMessage } from 'src/chat/entities/chat.entity';
+import { Format } from 'src/formats/entities/format.entity';
 
 @Entity('tasks')
 export class Task {
@@ -46,6 +47,9 @@ export class Task {
 
   @OneToMany(() => FileTask, file => file.task, { cascade: true })
   files: FileTask[];
+
+  @OneToMany(() => Format, format => format.task, { cascade: true })
+  formats: Format[];
 
   @OneToOne(() => SpecialTask, specialTask => specialTask.task, {
     cascade: true,
