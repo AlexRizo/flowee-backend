@@ -26,7 +26,7 @@ export class ChatService {
     const messages = await this.chatMessagesRepository.find({
       where: { task: { id: taskId } },
       order: {
-        createdAt: 'ASC',
+        createdAt: 'DESC',
       },
       relations: {
         user: true,
@@ -38,7 +38,7 @@ export class ChatService {
       throw new NotFoundException('No se encontraron mensajes para esta tarea');
     }
 
-    return { messages };
+    return { messages: messages.reverse() };
   }
 
   async create({ content, taskId, userId }: CreateMessageDto) {
