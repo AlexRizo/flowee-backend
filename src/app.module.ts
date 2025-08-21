@@ -11,6 +11,7 @@ import { TasksWsModule } from './tasks-ws/tasks-ws.module';
 import { ChatModule } from './chat/chat.module';
 import { FormatsModule } from './formats/formats.module';
 import { DeliveriesModule } from './deliveries/deliveries.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
     ChatModule,
     FormatsModule,
     DeliveriesModule,
+    S3Module,
   ],
   controllers: [],
 })
