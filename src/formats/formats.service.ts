@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateFormatDto } from './dto/create-format.dto';
 import { UpdateFormatDto } from './dto/update-format.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,7 +27,13 @@ export class FormatsService {
         description,
         task: { id: taskId },
       });
-      return await this.formatRepository.save(format);
+
+      await this.formatRepository.save(format);
+
+      return {
+        message: 'Formato creado correctamente',
+        format,
+      };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error);
@@ -34,8 +44,23 @@ export class FormatsService {
     return `This action returns all formats`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} format`;
+  async findOneByTaskId(id: string) {
+    await this.taskService.findOne(id);
+
+    const formats = await this.formatRepository.find({
+      where: {
+        task: { id },
+      },
+      relations: {
+        task: true,
+      },
+    });
+
+    if (!formats || !formats.length) {
+      throw new NotFoundException('La tarea no cuenta con formatos');
+    }
+
+    return { formats };
   }
 
   update(id: number, updateFormatDto: UpdateFormatDto) {

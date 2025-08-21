@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { FormatsService } from './formats.service';
 import { CreateFormatDto } from './dto/create-format.dto';
@@ -33,9 +34,9 @@ export class FormatsController {
     return this.formatsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.formatsService.findOne(+id);
+  @Get('task/:id')
+  findOneByTaskId(@Param('id', ParseUUIDPipe) id: string) {
+    return this.formatsService.findOneByTaskId(id);
   }
 
   @Patch(':id')

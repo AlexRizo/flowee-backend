@@ -31,7 +31,13 @@ export class Delivery {
   description: string;
 
   @Column({ type: 'text' })
-  attachment: string;
+  public_id: string;
+
+  @Column({ type: 'text' })
+  name: string;
+
+  @Column({ type: 'text' })
+  url: string;
 
   @Column({
     type: 'enum',
