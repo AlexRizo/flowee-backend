@@ -6,21 +6,40 @@ import {
   ParseUUIDPipe,
   UploadedFiles,
   Get,
+  Query,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FilesPayloadPipe } from './pipes/files-payload.pipe';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
+  @Auth(Roles.ADMIN)
   @Get('task/:id')
   getTaskFiles(@Param('id', ParseUUIDPipe) id: string) {
     return this.filesService.getTaskFiles(id);
   }
 
+  @Auth()
+  @Get('task/download/:id')
+  download(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('filename') filename?: string,
+  ) {
+    return this.filesService.downloadFile(id, filename);
+  }
+
+  @Auth(
+    Roles.ADMIN,
+    Roles.DESIGN_MANAGER,
+    Roles.PUBLISHER_MANAGER,
+    Roles.PUBLISHER,
+  )
   @Post('task/:id')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -51,16 +70,3 @@ export class FilesController {
     return this.filesService.createTaskFiles(files, id);
   }
 }
-
-// @Post('task/:id/includes-attachments')
-// @UseInterceptors(
-//   FilesInterceptor('files', 5, {
-//     storage: memoryStorage(),
-//   }),
-// )
-// createIncludesFiles(
-//   @Param('id', ParseUUIDPipe) id: string,
-//   @ValidateFiles() files: Express.Multer.File[],
-// ) {
-//   return this.filesService.createIncludesFiles(files, id);
-// }

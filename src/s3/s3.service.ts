@@ -2,9 +2,12 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -12,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { S3UploadRejected, S3UploadResult } from './interfaces/s3.interfaces';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class S3Service {
@@ -74,7 +78,7 @@ export class S3Service {
         message: 'Archivo subido correctamente',
       } as S3UploadResult;
     } catch (error) {
-      console.error(error);
+      console.log(error);
       throw new InternalServerErrorException('Error al subir el archivo');
     }
   }
@@ -113,6 +117,50 @@ export class S3Service {
     };
   }
 
+  private async assertExists(key: string) {
+    try {
+      await this.s3.send(
+        new HeadObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+        }),
+      );
+    } catch (error) {
+      console.log(error);
+      throw new NotFoundException('El archivo no existe');
+    }
+  }
+
+  async signUrlToDownload(
+    key: string,
+    filename?: string,
+    expiresIn: number = 60,
+  ) {
+    await this.assertExists(key);
+
+    try {
+      const safeName = (filename || path.basename(key)).replace(/"/g, '');
+
+      const cmd = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        // ? Para forzar la descarga del archivo;
+        ResponseContentDisposition: `attachment; filename="${safeName}"`,
+      });
+
+      const signedUrl = await getSignedUrl(this.s3, cmd, {
+        expiresIn,
+      });
+
+      return { signedUrl };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Ha ocurrido un error al firmar laURL',
+      );
+    }
+  }
+
   async deleteFile(key: string) {
     if (!key) {
       throw new BadRequestException('La clave es requerida ?key=ABC/123');
@@ -130,7 +178,7 @@ export class S3Service {
         message: 'Archivo eliminado correctamente',
       };
     } catch (error) {
-      console.error(error);
+      console.log(error);
       throw new InternalServerErrorException('Error al eliminar el archivo');
     }
   }

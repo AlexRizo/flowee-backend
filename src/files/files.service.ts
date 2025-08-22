@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileTask, FileTaskType } from './entities/task-file.entity';
 import { Repository } from 'typeorm';
 import { TasksService } from 'src/tasks/tasks.service';
@@ -9,7 +8,6 @@ import { S3Service } from 'src/s3/s3.service';
 @Injectable()
 export class FilesService {
   constructor(
-    private readonly cloudinaryService: CloudinaryService,
     private readonly s3Service: S3Service,
     private readonly taskService: TasksService,
     @InjectRepository(FileTask)
@@ -39,6 +37,14 @@ export class FilesService {
       referenceFiles,
       includeFiles,
     };
+  }
+
+  async getTaskFile(id: string) {
+    const file = await this.fileTaskRepository.findOneBy({ id });
+
+    if (!file) throw new NotFoundException('El archivo solicitado no existe');
+
+    return file;
   }
 
   async createTaskFiles(
@@ -99,8 +105,14 @@ export class FilesService {
     }
   }
 
-  createIncludesFiles(files: Express.Multer.File[], id: string) {
-    console.log(files, id);
-    return 'This action adds a new file';
+  async downloadFile(id: string, filename?: string) {
+    const file = await this.getTaskFile(id);
+
+    const { signedUrl } = await this.s3Service.signUrlToDownload(
+      file.key,
+      filename || file.name,
+    );
+
+    return { signedUrl };
   }
 }

@@ -14,9 +14,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       let message = 'Unauthorized';
       if (typeof raw === 'string') {
         const r = raw.toLowerCase();
-        if (r.includes('no auth token'))
-          message =
-            'Hay un problema con el token, por favor, inicia sesión nuevamente';
+        if (r.includes('no auth token')) message = 'Acceso denegado';
         else if (r.includes('jwt expired'))
           message = 'El token expiró, inicia sesión de nuevo';
         else if (r.includes('invalid token')) message = 'Token no válido';
