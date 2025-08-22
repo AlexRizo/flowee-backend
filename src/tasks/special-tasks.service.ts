@@ -100,10 +100,6 @@ export class SpecialTasksService {
     return { tasks };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} task`;
-  }
-
   private handleDBExceptions(error: any) {
     console.log(error);
     throw new InternalServerErrorException(

@@ -22,7 +22,7 @@ export class FileTask {
   name: string;
 
   @Column({ type: 'text' })
-  public_id: string;
+  key: string;
 
   @Column({ type: 'text' })
   url: string;

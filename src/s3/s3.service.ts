@@ -11,6 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { S3UploadRejected, S3UploadResult } from './interfaces/s3.interfaces';
 
 @Injectable()
 export class S3Service {
@@ -47,11 +48,11 @@ export class S3Service {
 
   async upload(
     buffer: Buffer,
-    folder: string,
+    prefix: string,
     originalName: string,
     mimetype: string,
   ) {
-    const key = this.buildKey(originalName, folder);
+    const key = this.buildKey(originalName, prefix);
     const contentType = mimetype;
 
     try {
@@ -69,12 +70,47 @@ export class S3Service {
       return {
         key,
         url: this.buildPublicUrl(key),
+        originalName,
         message: 'Archivo subido correctamente',
-      };
+      } as S3UploadResult;
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException('Error al subir el archivo');
     }
+  }
+
+  async uploadMany(files: Express.Multer.File[], prefix: string) {
+    const uploaded: S3UploadResult[] = [];
+    const rejected: S3UploadRejected[] = [];
+    let message = 'Archivos subidos correctamente';
+
+    const uploads = files.map(file =>
+      this.upload(file.buffer, prefix, file.originalname, file.mimetype),
+    );
+
+    const settled = await Promise.allSettled(uploads);
+
+    settled.forEach((result, i) => {
+      if (result.status === 'fulfilled') {
+        uploaded.push(result.value);
+      } else {
+        rejected.push({
+          originalName: files[i].originalname,
+          reason:
+            result.reason.message || 'Error desconocido al subir el archivo',
+        });
+      }
+    });
+
+    if (rejected.length) {
+      message = 'Algunos archivos no pudieron ser subidos';
+    }
+
+    return {
+      uploaded,
+      rejected,
+      message,
+    };
   }
 
   async deleteFile(key: string) {
