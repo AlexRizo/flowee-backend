@@ -15,10 +15,10 @@ import { BoardsService } from 'src/boards/boards.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Board } from 'src/boards/entities/board.entity';
 import * as sharp from 'sharp';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { Task } from 'src/tasks/entities/task.entity';
 import { Status } from 'src/tasks/utils/utils';
+import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +31,7 @@ export class UsersService {
 
     private readonly boardsService: BoardsService,
 
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -90,12 +90,25 @@ export class UsersService {
     }
   }
 
+  private getFileKey(url: string, prefix?: string) {
+    let key: string;
+
+    if (prefix) {
+      key = `${prefix}/${url.split('/').pop()}`;
+    } else {
+      key = url.split('/').pop();
+    }
+
+    return key;
+  }
+
   async uploadAvatar(file: Express.Multer.File, term: string) {
     try {
       const user = await this.findOne(term);
 
       if (user.avatar) {
-        await this.cloudinaryService.deleteFile(user.avatar);
+        const key = this.getFileKey(user.avatar, 'avatars');
+        await this.s3Service.deleteFile(key);
       }
 
       const resized = await sharp(file.buffer)
@@ -106,16 +119,17 @@ export class UsersService {
         .webp()
         .toBuffer();
 
-      const result = await this.cloudinaryService.uploadBuffer(
+      const result = await this.s3Service.upload(
         resized,
         'avatars',
-        'avatar',
+        file.originalname,
+        file.mimetype,
       );
 
-      await this.userRepository.update(user.id, { avatar: result.secure_url });
+      await this.userRepository.update(user.id, { avatar: result.url });
 
       return {
-        url: result.secure_url,
+        url: result.url,
         message: 'Avatar actualizado correctamente',
       };
     } catch (error) {

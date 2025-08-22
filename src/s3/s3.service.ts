@@ -45,16 +45,21 @@ export class S3Service {
     return `https://${this.bucketName}.s3.${this.bucketRegion}.amazonaws.com/${key}`;
   }
 
-  async upload(file: Express.Multer.File, folder: string) {
-    const key = this.buildKey(file.originalname, folder);
-    const contentType = file.mimetype;
+  async upload(
+    buffer: Buffer,
+    folder: string,
+    originalName: string,
+    mimetype: string,
+  ) {
+    const key = this.buildKey(originalName, folder);
+    const contentType = mimetype;
 
     try {
       await this.s3.send(
         new PutObjectCommand({
           Bucket: this.bucketName,
           Key: key,
-          Body: file.buffer,
+          Body: buffer,
           ContentType: contentType,
           CacheControl: 'max-age=31536000, public',
           ContentDisposition: 'inline',

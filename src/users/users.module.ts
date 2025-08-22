@@ -5,16 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { BoardsModule } from 'src/boards/boards.module';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { TasksModule } from 'src/tasks/tasks.module';
+import { S3Module } from 'src/s3/s3.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     AuthModule,
     BoardsModule,
-    CloudinaryModule,
     forwardRef(() => TasksModule),
+    S3Module,
   ],
   controllers: [UsersController],
   providers: [UsersService],

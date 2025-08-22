@@ -24,7 +24,12 @@ export class S3Controller {
     @ValidateImageFile()
     file: Express.Multer.File,
   ) {
-    return this.s3Service.upload(file, 'avatars');
+    return this.s3Service.upload(
+      file.buffer,
+      'avatars',
+      file.originalname,
+      file.mimetype,
+    );
   }
 
   @Delete('delete')
