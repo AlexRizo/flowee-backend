@@ -86,6 +86,7 @@ export class S3Service {
   async uploadMany(files: Express.Multer.File[], prefix: string) {
     const uploaded: S3UploadResult[] = [];
     const rejected: S3UploadRejected[] = [];
+
     let message = 'Archivos subidos correctamente';
 
     const uploads = files.map(file =>

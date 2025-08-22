@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateFormatDto } from './dto/create-format.dto';
-import { UpdateFormatDto } from './dto/update-format.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Format } from './entities/format.entity';
 import { Repository } from 'typeorm';
@@ -40,8 +39,12 @@ export class FormatsService {
     }
   }
 
-  findAll() {
-    return `This action returns all formats`;
+  async findOne(id: string) {
+    const format = await this.formatRepository.findOneBy({ id });
+
+    if (!format) throw new NotFoundException('El formato no existe');
+
+    return format;
   }
 
   async findOneByTaskId(id: string) {
@@ -61,13 +64,5 @@ export class FormatsService {
     }
 
     return { formats };
-  }
-
-  update(id: number, updateFormatDto: UpdateFormatDto) {
-    return `This action updates a #${id} format`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} format`;
   }
 }

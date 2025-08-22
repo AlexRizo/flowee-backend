@@ -10,5 +10,6 @@ import { AuthModule } from 'src/auth/auth.module';
   imports: [TypeOrmModule.forFeature([Format]), TasksModule, AuthModule],
   controllers: [FormatsController],
   providers: [FormatsService],
+  exports: [FormatsService],
 })
 export class FormatsModule {}

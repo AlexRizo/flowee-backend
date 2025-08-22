@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  BeforeInsert,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -31,10 +32,10 @@ export class Delivery {
   description: string;
 
   @Column({ type: 'text' })
-  public_id: string;
+  key: string;
 
   @Column({ type: 'text' })
-  name: string;
+  filename: string;
 
   @Column({ type: 'text' })
   url: string;
@@ -51,4 +52,9 @@ export class Delivery {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setDefaultStatus() {
+    this.status = DeliveryStatus.PENDING;
+  }
 }
