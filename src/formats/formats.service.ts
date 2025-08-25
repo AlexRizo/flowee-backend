@@ -50,16 +50,15 @@ export class FormatsService {
   async findOneByTaskId(id: string) {
     await this.taskService.findOne(id);
 
-    const formats = await this.formatRepository.find({
-      where: {
-        task: { id },
-      },
-      relations: {
-        task: true,
-      },
-    });
+    const formats = await this.formatRepository
+      .createQueryBuilder('format')
+      .leftJoinAndSelect('format.deliveries', 'delivery')
+      .where('format.taskId = :id', { id })
+      .orderBy('format.createdAt', 'ASC')
+      .addOrderBy('delivery.createdAt', 'DESC')
+      .getMany();
 
-    if (!formats || !formats.length) {
+    if (!formats.length) {
       throw new NotFoundException('La tarea no cuenta con formatos');
     }
 

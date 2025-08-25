@@ -4,12 +4,15 @@ import { FileTask, FileTaskType } from './entities/task-file.entity';
 import { Repository } from 'typeorm';
 import { TasksService } from 'src/tasks/tasks.service';
 import { S3Service } from 'src/s3/s3.service';
+import { DeliveriesService } from 'src/deliveries/deliveries.service';
 
 @Injectable()
 export class FilesService {
   constructor(
     private readonly s3Service: S3Service,
     private readonly taskService: TasksService,
+    private readonly deliveryService: DeliveriesService,
+
     @InjectRepository(FileTask)
     private readonly fileTaskRepository: Repository<FileTask>,
   ) {}
@@ -105,12 +108,23 @@ export class FilesService {
     }
   }
 
-  async downloadFile(id: string, filename?: string) {
+  async downloadTaskFile(id: string, filename?: string) {
     const file = await this.getTaskFile(id);
 
     const { signedUrl } = await this.s3Service.signUrlToDownload(
       file.key,
       filename || file.name,
+    );
+
+    return { signedUrl };
+  }
+
+  async downloadDeliveryFile(id: string, filename?: string) {
+    const delivery = await this.deliveryService.findOne(id);
+
+    const { signedUrl } = await this.s3Service.signUrlToDownload(
+      delivery.key,
+      filename || delivery.filename,
     );
 
     return { signedUrl };

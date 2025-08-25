@@ -5,6 +5,8 @@ import {
   Body,
   Param,
   UseInterceptors,
+  ParseUUIDPipe,
+  Patch,
 } from '@nestjs/common';
 import { DeliveriesService } from './deliveries.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
@@ -13,6 +15,7 @@ import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { ValidateImageFile } from 'src/common/decorators/validate-image-file-decorator.decorator';
+import { UpdateDeliveryStatusDto } from './dto/update-status.dto';
 
 @Controller('deliveries')
 export class DeliveriesController {
@@ -38,7 +41,15 @@ export class DeliveriesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.deliveriesService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.deliveriesService.findOne(id);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateStatusDto: UpdateDeliveryStatusDto,
+  ) {
+    return this.deliveriesService.updateStatus(id, updateStatusDto);
   }
 }

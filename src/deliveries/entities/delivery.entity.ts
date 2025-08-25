@@ -9,12 +9,7 @@ import {
   BeforeInsert,
   UpdateDateColumn,
 } from 'typeorm';
-
-enum DeliveryStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-}
+import { DeliveryStatus } from '../interfaces/deliveries.interface';
 
 @Entity('deliveries')
 export class Delivery {
@@ -46,6 +41,9 @@ export class Delivery {
     default: DeliveryStatus.PENDING,
   })
   status: DeliveryStatus;
+
+  @Column({ type: 'text', nullable: true })
+  comments: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

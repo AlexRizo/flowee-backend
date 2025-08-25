@@ -10,5 +10,6 @@ import { S3Module } from 'src/s3/s3.module';
   imports: [TypeOrmModule.forFeature([Delivery]), FormatsModule, S3Module],
   controllers: [DeliveriesController],
   providers: [DeliveriesService],
+  exports: [DeliveriesService],
 })
 export class DeliveriesModule {}

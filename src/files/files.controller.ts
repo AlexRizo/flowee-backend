@@ -19,7 +19,7 @@ import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  @Auth(Roles.ADMIN)
+  @Auth()
   @Get('task/:id')
   getTaskFiles(@Param('id', ParseUUIDPipe) id: string) {
     return this.filesService.getTaskFiles(id);
@@ -27,11 +27,20 @@ export class FilesController {
 
   @Auth()
   @Get('task/download/:id')
-  download(
+  downloadTaskFile(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('filename') filename?: string,
   ) {
-    return this.filesService.downloadFile(id, filename);
+    return this.filesService.downloadTaskFile(id, filename);
+  }
+
+  @Auth()
+  @Get('task/deliveries/download/:id')
+  downloadDeliveryFile(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('filename') filename?: string,
+  ) {
+    return this.filesService.downloadDeliveryFile(id, filename);
   }
 
   @Auth(
