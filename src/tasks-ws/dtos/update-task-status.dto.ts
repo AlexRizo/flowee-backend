@@ -1,4 +1,4 @@
-import { IsEnum, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Status } from 'src/tasks/utils/utils';
 
 export class UpdateTaskStatusDto {
@@ -9,5 +9,6 @@ export class UpdateTaskStatusDto {
   status: Status;
 
   @IsUUID()
-  boardId: string;
+  @IsOptional()
+  boardId?: string;
 }

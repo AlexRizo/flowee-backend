@@ -68,10 +68,21 @@ export class TasksWsGateway
   }
 
   @SubscribeMessage('task-status-update')
-  onTaskStatusUpdate(client: Socket, payload: UpdateTaskStatusDto) {
-    this.tasksWsService.updateTaskStatus(payload.taskId, payload.status);
+  async onTaskStatusUpdate(client: Socket, payload: UpdateTaskStatusDto) {
+    let boardId: string = payload.boardId;
 
-    client.to(payload.boardId).emit('task-status-updated', {
+    const { task } = await this.tasksWsService.updateTaskStatus(
+      payload.taskId,
+      payload.status,
+    );
+
+    if (!payload.boardId) {
+      boardId = task.board.id;
+    }
+
+    console.log(boardId);
+
+    client.to(boardId).emit('task-status-updated', {
       taskId: payload.taskId,
       status: payload.status,
     });

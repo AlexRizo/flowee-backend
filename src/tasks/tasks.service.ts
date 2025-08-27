@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { Task } from './entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Roles } from 'src/auth/interfaces/auth-decorator.interface';
@@ -100,6 +100,7 @@ export class TasksService {
     await this.taskRepository.save(task);
 
     return {
+      task,
       message: 'Estado de la tarea actualizado correctamente',
     };
   }
@@ -129,5 +130,35 @@ export class TasksService {
       console.log(error);
       throw new BadRequestException('Error al asignar la tarea');
     }
+  }
+
+  async findAllUserTasks(user: User) {
+    await this.userService.findOne(user.id);
+
+    const pendingTasks = await this.taskRepository.find({
+      where: { assignedTo: { id: user.id }, status: Not(Status.DONE) },
+      relations: ['author', 'assignedTo', 'board'],
+    });
+
+    const fourDaysAgo = new Date();
+    fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+
+    const doneTasks = await this.taskRepository.find({
+      where: {
+        assignedTo: { id: user.id },
+        status: Status.DONE,
+        createdAt: MoreThan(fourDaysAgo),
+      },
+      relations: ['author', 'assignedTo', 'board'],
+    });
+
+    if (!pendingTasks.length && !doneTasks.length) {
+      throw new NotFoundException('No se encontraron tareas');
+    }
+
+    return {
+      pendingTasks,
+      doneTasks,
+    };
   }
 }

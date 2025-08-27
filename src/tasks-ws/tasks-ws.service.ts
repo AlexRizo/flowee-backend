@@ -49,7 +49,7 @@ export class TasksWsService {
   }
 
   async updateTaskStatus(taskId: string, status: Status) {
-    await this.tasksService.updateStatus(taskId, status);
+    return await this.tasksService.updateStatus(taskId, status);
   }
 
   async assignTask({ taskId, designerId }: AssignTaskDto) {
