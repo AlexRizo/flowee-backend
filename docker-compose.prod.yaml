@@ -1,0 +1,37 @@
+services:
+  floweeapp:
+    depends_on:
+      - db
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: floweeapp-docker
+    container_name: floweeapp
+    restart: always # reiniciar el contenedor si se detiene
+    ports:
+      - "${PORT}:${PORT}"
+    # working_dir: /var/www/flowee
+    env_file:
+      - .env
+    # environment:
+    #   DB_HOST: ${DB_HOST}
+    #   DB_PORT: ${DB_PORT}
+    #   DB_USERNAME: ${DB_USERNAME}
+    #   DB_PASSWORD: ${DB_PASSWORD}
+    #   DB_NAME: ${DB_NAME}
+    #   NODE_ENV: production
+  db:
+    image: postgres
+    restart: always
+    container_name: flowee-db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      NODE_ENV: production
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_PORT: ${DB_PORT}
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
