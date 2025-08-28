@@ -54,7 +54,7 @@ export class AuthService {
 
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: false, //process.env.NODE_ENV === 'production',
+      secure: true, //process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none', //? Para evitar ataques CSRF
     });
@@ -78,7 +78,7 @@ export class AuthService {
 
     res.cookie('access_token', checkToken, {
       httpOnly: true,
-      secure: false, //process.env.NODE_ENV === 'production',
+      secure: true, //process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none', //? Para evitar ataques CSRF
     });
