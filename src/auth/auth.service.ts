@@ -57,6 +57,7 @@ export class AuthService {
       secure: true, //process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none', //? Para evitar ataques CSRF
+      path: '/',
     });
 
     return { user };
@@ -81,6 +82,7 @@ export class AuthService {
       secure: true, //process.env.NODE_ENV === 'production',
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none', //? Para evitar ataques CSRF
+      path: '/',
     });
 
     return {
