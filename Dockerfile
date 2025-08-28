@@ -1,27 +1,21 @@
-# ===== Etapa 1: build =====
-FROM node:20-alpine AS build
+FROM node:22.16-alpine3.21 AS deps
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
 
-# Instala deps con caché eficiente
-COPY package*.json ./
+COPY package.json package-lock.json ./
+
 RUN npm ci
 
-# Copia el resto y compila Nest a /dist
-COPY . .
+FROM node:22.16-alpine3.21 AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build
 
-# Deja solo deps de prod
-RUN npm prune --omit=dev
+FROM node:22.16-alpine3.21 AS runner
+WORKDIR /usr/src/app
+COPY package.json package-lock.json ./
+RUN npm install --prod
+COPY --from=builder /app/dist ./dist
 
-# ===== Etapa 2: runtime =====
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-
-# Trae node_modules (solo prod) y el código compilado
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-COPY package*.json ./
-
-EXPOSE 3000
 CMD ["node", "dist/main.js"]
