@@ -1,37 +1,67 @@
+version: "3.9"
+
 services:
+  db:
+    image: postgres:15
+    container_name: flowee-db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    # No expongas 5432 si solo lo usa la app interna
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - appnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
   floweeapp:
-    depends_on:
-      - db
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     image: floweeapp-docker
     container_name: floweeapp
-    restart: always # reiniciar el contenedor si se detiene
-    ports:
-      - "${PORT}:${PORT}"
-    # working_dir: /var/www/flowee
+    restart: always
     env_file:
       - .env
-    # environment:
-    #   DB_HOST: ${DB_HOST}
-    #   DB_PORT: ${DB_PORT}
-    #   DB_USERNAME: ${DB_USERNAME}
-    #   DB_PASSWORD: ${DB_PASSWORD}
-    #   DB_NAME: ${DB_NAME}
-    #   NODE_ENV: production
-  db:
-    image: postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    # No abras el puerto al host; Nginx hará el proxy
+    expose:
+      - "${PORT}"
+    networks:
+      - appnet
+
+  nginx:
+    image: nginx:stable
+    container_name: flowee-nginx
     restart: always
-    container_name: flowee-db
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-      NODE_ENV: production
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_HOST: ${DB_HOST}
-      POSTGRES_PORT: ${DB_PORT}
+      - "80:80"
+      - "443:443"
+    # Si usas nginx.conf completo, está bien esta ruta.
+    # Si usas un server en conf.d, cambia a conf.d/default.conf
     volumes:
-      - ./postgres:/var/lib/postgresql/data
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Si montas certificados de Let's Encrypt en el host, añádelos:
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - floweeapp
+    networks:
+      - appnet
+
+volumes:
+  pg_data:
+
+networks:
+  appnet:
