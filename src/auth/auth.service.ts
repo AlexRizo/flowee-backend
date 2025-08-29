@@ -58,6 +58,7 @@ export class AuthService {
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none', //? Para evitar ataques CSRF
       path: '/',
+      domain: process.env.DOMAIN,
     });
 
     return { user };
@@ -83,6 +84,7 @@ export class AuthService {
       maxAge: 1000 * 60 * 60 * 24, //? 1 día;
       sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none', //? Para evitar ataques CSRF
       path: '/',
+      domain: process.env.DOMAIN,
     });
 
     return {
