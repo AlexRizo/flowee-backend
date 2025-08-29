@@ -65,7 +65,13 @@ export class AuthService {
   }
 
   async logout(res: Response) {
-    res.clearCookie('access_token');
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.SAMESITE as 'lax' | 'strict' | 'none',
+      domain: process.env.DOMAIN,
+      path: '/',
+    });
     return { message: 'Sesión terminada' };
   }
 

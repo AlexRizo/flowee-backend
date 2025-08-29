@@ -23,8 +23,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         (req: Request) => {
           const cookie = req.headers.cookie;
 
-          console.log(cookie);
-
           if (!cookie) return null;
 
           let accessToken: string | null = null;
