@@ -34,7 +34,7 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 COPY package*.json ./
 # Cachea npm para que no descargue deps cada vez
-RUN --mount=type=cache,id=npm,target=/root/.npm \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     npm ci --ignore-scripts
 
 ########################
