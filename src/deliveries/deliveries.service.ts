@@ -4,13 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
-import { FormatsService } from 'src/formats/formats.service';
-import { S3Service } from 'src/s3/s3.service';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Delivery } from './entities/delivery.entity';
 import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UpdateDeliveryStatusDto } from './dto/update-status.dto';
-import { DeliveryStatus } from './interfaces/deliveries.interface';
+import { TasksService } from 'src/tasks/tasks.service';
 
 @Injectable()
 export class DeliveriesService {
@@ -18,41 +15,28 @@ export class DeliveriesService {
     @InjectRepository(Delivery)
     private readonly deliveryRepository: Repository<Delivery>,
 
-    private readonly formatService: FormatsService,
-    private readonly s3Service: S3Service,
+    private readonly taskService: TasksService,
   ) {}
 
-  async create(
-    { formatId, description }: CreateDeliveryDto,
-    file: Express.Multer.File,
-  ) {
-    await this.formatService.findOne(formatId);
+  async create({ description, taskId }: CreateDeliveryDto) {
+    await this.taskService.findOne(taskId);
 
-    const upload = await this.s3Service.upload(
-      file.buffer,
-      'deliveries',
-      file.originalname,
-      file.mimetype,
-    );
+    try {
+      const delivery = this.deliveryRepository.create({
+        description,
+        task: { id: taskId },
+      });
 
-    const delivery = this.deliveryRepository.create({
-      key: upload.key,
-      formatId,
-      description,
-      filename: file.originalname,
-      url: upload.url,
-    });
+      await this.deliveryRepository.save(delivery);
 
-    await this.deliveryRepository.save(delivery);
-
-    return {
-      message: 'Entregable creado correctamente',
-      delivery,
-    };
-  }
-
-  findAll() {
-    return `This action returns all deliveries`;
+      return {
+        message: 'Entregable creado correctamente',
+        delivery,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async findOne(id: string) {
@@ -63,28 +47,21 @@ export class DeliveriesService {
     return delivery;
   }
 
-  async updateStatus(
-    id: string,
-    { status, comments }: UpdateDeliveryStatusDto,
-  ) {
-    const delivery = await this.findOne(id);
+  async findByTaskId(id: string) {
+    await this.taskService.findOne(id);
 
-    delivery.status = status;
+    const deliveries = await this.deliveryRepository
+      .createQueryBuilder('delivery')
+      .leftJoinAndSelect('delivery.versions', 'version')
+      .where('delivery.taskId = :id', { id })
+      .orderBy('delivery.createdAt', 'ASC')
+      .addOrderBy('version.createdAt', 'DESC')
+      .getMany();
 
-    if (comments) delivery.comments = comments;
-
-    const message =
-      status === DeliveryStatus.ACCEPTED ? 'aceptada' : 'rechazada';
-
-    try {
-      await this.deliveryRepository.save(delivery);
-
-      return {
-        message: `La entrega ha sido marcada como ${message}`,
-      };
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException('Error al marcar la entrega');
+    if (!deliveries.length) {
+      throw new NotFoundException('La tarea no cuenta con entregables');
     }
+
+    return { deliveries };
   }
 }

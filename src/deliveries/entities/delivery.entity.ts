@@ -1,58 +1,32 @@
-import { Format } from 'src/formats/entities/format.entity';
+import { Version } from 'src/versions/entities/version.entity';
+import { Task } from 'src/tasks/entities/task.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
-  BeforeInsert,
   UpdateDateColumn,
 } from 'typeorm';
-import { DeliveryStatus } from '../interfaces/deliveries.interface';
 
 @Entity('deliveries')
 export class Delivery {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'format_id', type: 'uuid' })
-  formatId: string;
-
-  @ManyToOne(() => Format, format => format.deliveries, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'format_id' })
-  format: Format;
-
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'text' })
-  key: string;
+  @ManyToOne(() => Task, task => task.deliveries, { onDelete: 'CASCADE' })
+  task: Task;
 
-  @Column({ type: 'text' })
-  filename: string;
-
-  @Column({ type: 'text' })
-  url: string;
-
-  @Column({
-    type: 'enum',
-    enum: DeliveryStatus,
-    default: DeliveryStatus.PENDING,
-  })
-  status: DeliveryStatus;
-
-  @Column({ type: 'text', nullable: true })
-  comments: string;
+  @OneToMany(() => Version, version => version.delivery, { cascade: false })
+  versions: Version[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
-
-  @BeforeInsert()
-  setDefaultStatus() {
-    this.status = DeliveryStatus.PENDING;
-  }
 }

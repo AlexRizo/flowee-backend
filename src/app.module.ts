@@ -9,8 +9,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FilesModule } from './files/files.module';
 import { TasksWsModule } from './tasks-ws/tasks-ws.module';
 import { ChatModule } from './chat/chat.module';
-import { FormatsModule } from './formats/formats.module';
 import { DeliveriesModule } from './deliveries/deliveries.module';
+import { VersionsModule } from './versions/versions.module';
 import { S3Module } from './s3/s3.module';
 
 @Module({
@@ -37,8 +37,8 @@ import { S3Module } from './s3/s3.module';
     FilesModule,
     TasksWsModule,
     ChatModule,
-    FormatsModule,
     DeliveriesModule,
+    VersionsModule,
     S3Module,
   ],
   controllers: [],

@@ -35,12 +35,12 @@ export class FilesController {
   }
 
   @Auth()
-  @Get('task/deliveries/download/:id')
+  @Get('task/versions/download/:id')
   downloadDeliveryFile(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('filename') filename?: string,
   ) {
-    return this.filesService.downloadDeliveryFile(id, filename);
+    return this.filesService.downloadVersionFile(id, filename);
   }
 
   @Auth(

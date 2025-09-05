@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FileTask } from './entities/task-file.entity';
 import { TasksModule } from 'src/tasks/tasks.module';
 import { S3Module } from 'src/s3/s3.module';
-import { DeliveriesModule } from 'src/deliveries/deliveries.module';
+import { VersionsModule } from 'src/versions/versions.module';
 
 @Module({
   controllers: [FilesController],
@@ -13,7 +13,7 @@ import { DeliveriesModule } from 'src/deliveries/deliveries.module';
     TypeOrmModule.forFeature([FileTask]),
     S3Module,
     forwardRef(() => TasksModule),
-    forwardRef(() => DeliveriesModule),
+    forwardRef(() => VersionsModule),
   ],
   providers: [FilesService],
   exports: [FilesService],
